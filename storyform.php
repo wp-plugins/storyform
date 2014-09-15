@@ -1,0 +1,66 @@
+<?php /*
+
+**************************************************************************
+
+Plugin Name:  Storyform
+Plugin URI:   http://storyform.co/docs/wordpress
+Version:      0.3.8
+Description:  Plugin to enable Storyform on select posts. Works with both SEO and non-SEO permalinks.
+Author:       Storyform
+Author URI:   http://storyform.co
+
+**************************************************************************/
+
+require_once( dirname( __FILE__ ) . '/config.php');
+require_once( dirname( __FILE__ ) . '/class-storyform-options.php');
+require_once( dirname( __FILE__ ) . '/editor/storyform-editor.php' );
+require_once( dirname( __FILE__ ) . '/media/storyform-media.php' );
+require_once( dirname( __FILE__ ) . '/class-storyform.php');
+require_once( dirname( __FILE__ ) . '/class-storyform-settings-page.php');
+require_once( dirname( __FILE__ ) . '/class-storyform-admin-meta-box.php');
+
+$storyform = Storyform::get_instance()->init();
+
+if( is_admin() ) {
+	$storyform_settings_page = new Storyform_Settings_Page();
+}
+
+function storyform_init() {
+	load_plugin_textdomain( Storyform_Api::get_instance()->get_textdomain(), false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+}
+add_action( 'init', 'storyform_init' ); 
+
+Storyform_Admin_Meta_Box::init();
+
+
+/**
+ * Storyform theme setup.
+ *
+ * Does some basic theme stuff like establishing support for RSS feed links and hiding the admin bar
+ *
+ */
+if ( ! function_exists( 'storyform_setup' ) ) :
+function storyform_setup() {
+	if( Storyform::template_in_use() ) {
+		add_theme_support( 'automatic-feed-links' ); // Add RSS feed links to <head> for posts and comments.
+		show_admin_bar( false );  
+	}
+
+}
+endif; // storyform_setup
+add_action( 'after_setup_theme', 'storyform_setup' );
+
+
+/**
+ * Migrates old plugin data (Narrative plugin up to 0.3.7) to this one.
+ *
+ */
+if ( ! function_exists( 'storyform_activation' ) ) :
+function storyform_activation() {
+	Storyform_Options::get_instance()->migrate();
+
+}
+endif; // storyform_setup
+register_activation_hook( __FILE__, 'storyform_activation' );
+
+?>

@@ -10,7 +10,7 @@ Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-0.3.html
 
-The Storyform plugin let's you select which posts you want to create Storyform magazines with.
+The Storyform plugin let's you create rich, immersive Storyform magazines with just a one click.
 
 == Description ==
 

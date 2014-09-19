@@ -200,17 +200,20 @@ function storyform_attachment_to_datasources( $id ) {
 		$sizeNames = get_intermediate_image_sizes();
 		foreach( $sizeNames as $name) {
 			$intermediate = image_get_intermediate_size( $id, $name );
-			$url = str_replace( $img_url_basename, $intermediate['file'], $img_url );
-			$width = $intermediate['width'];
-			$height = $intermediate['height'];
-			$aspect = $width / $height;
+			if( $intermediate ){
+				$url = str_replace( $img_url_basename, $intermediate['file'], $img_url );
+				$width = $intermediate['width'];
+				$height = $intermediate['height'];
+				$aspect = $width / $height;
 
-			// Only use scaled images not cropped images (pixel rounding can occur, thus the 0.01)
-			if( $aspect > $fullAspect + 0.01 || $aspect < $fullAspect - 0.01) {  
-				continue;
+				// Only use scaled images not cropped images (pixel rounding can occur, thus the 0.01)
+				if( $aspect > $fullAspect + 0.01 || $aspect < $fullAspect - 0.01) {  
+					continue;
+				}
+				
+				array_push( $datasources, $url . ' 1x ' . $width . 'w ' . $height . 'h' );	
 			}
 			
-			array_push( $datasources, $url . ' 1x ' . $width . 'w ' . $height . 'h' );
 		}
 		return esc_attr( join( ', ', $datasources ) );
 	}

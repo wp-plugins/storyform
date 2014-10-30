@@ -4,20 +4,26 @@
 
 Plugin Name:  Storyform
 Plugin URI:   http://storyform.co/docs/wordpress
-Version:      0.3.8
+Version:      0.4.0
 Description:  Plugin to enable Storyform on select posts. Works with both SEO and non-SEO permalinks.
 Author:       Storyform
 Author URI:   http://storyform.co
 
 **************************************************************************/
 
+global $storyform_version;
+$storyform_version = '0.4.0';
+
 require_once( dirname( __FILE__ ) . '/config.php');
 require_once( dirname( __FILE__ ) . '/class-storyform-options.php');
 require_once( dirname( __FILE__ ) . '/editor/storyform-editor.php' );
 require_once( dirname( __FILE__ ) . '/media/storyform-media.php' );
 require_once( dirname( __FILE__ ) . '/class-storyform.php');
+require_once( dirname( __FILE__ ) . '/class-storyform-color.php');
 require_once( dirname( __FILE__ ) . '/class-storyform-settings-page.php');
 require_once( dirname( __FILE__ ) . '/class-storyform-admin-meta-box.php');
+
+$storyform_plugin_identifier = 'storyform-wp-plugin-' . $storyform_version;
 
 $storyform = Storyform::get_instance()->init();
 
@@ -46,6 +52,9 @@ function storyform_setup() {
 		show_admin_bar( false );  
 	}
 
+	register_nav_menus( array(
+		'storyform_navbar'   => __( 'Storyform navigation bar (flat)' )
+	) );
 }
 endif; // storyform_setup
 add_action( 'after_setup_theme', 'storyform_setup' );
@@ -62,5 +71,16 @@ function storyform_activation() {
 }
 endif; // storyform_setup
 register_activation_hook( __FILE__, 'storyform_activation' );
+
+
+/**
+ * Simple wrapper for use in the template file to get the layout type for the article element.
+ *
+ */
+if ( ! function_exists( 'storyform_layout_type' ) ) :
+function storyform_layout_type() {
+	return Storyform_Options::get_instance()->get_layout_type_for_post( get_the_ID() ); 
+}
+endif; // storyform_setup
 
 ?>

@@ -7,7 +7,7 @@
 class Storyform_Admin_Meta_Box {
 
 	public static function init() {
-		add_action( 'save_post', array( __CLASS__, 'save_meta_box_data' ) );
+		add_action( 'save_post', array( __CLASS__, 'save_meta_box_data' ));
 		add_action( 'load-post.php', array( __CLASS__, 'post_meta_boxes_setup' ) );
 		add_action( 'load-post-new.php', array( __CLASS__, 'post_meta_boxes_setup' ) );
 	}
@@ -38,103 +38,53 @@ class Storyform_Admin_Meta_Box {
 		$app_key = $options->get_application_key();
 		// Get any previously specified template
 		$template = $options->get_template_for_post( $post_id, null ); 
+		$layout_type = $options->get_layout_type_for_post( $post_id );
 		$use_featured_image = $options->get_use_featured_image_for_post( $post_id ) ? 'checked' : '';
 		
 		$apiversiondir = Storyform_Api::get_instance()->get_version_directory();
 
 		wp_nonce_field( 'storyform_meta_box', 'storyform_meta_box_nonce' );
 
-
 		?>
 
 		<p>
-			<style type="text/css">
-				#storyform-status {
-					padding: 0;
-					margin: 0;
-					color: red;
-				}
-
-				.storyform-form-item {
-					margin-bottom:10px;
-				}
-
-			</style>
+			
 			<label for="storyform-templates"><?php esc_attr_e( 'Choose which Storyform templates to use for this post.', Storyform_Api::get_instance()->get_textdomain() ); ?></label>
 			<p id="storyform-status"></p>
 			<br />
 			<select class="widefat storyform-form-item" name="storyform-templates" id="storyform-templates-select" >
 				<option id="storyform-default-theme" value="pthemedefault">[Do not use Storyform]</option>
-				<option id="storyform-templates-loading" value="loading" disabled="true">Loading other themes...</option>
+				<option id="storyform-templates-loading" value="loading" disabled="true">Loading templates (reopen to view)...</option>
 			</select>
-			<label id="storyform-use-featured-image" style="display:none;">
-				<input class="storyform-form-item" type="checkbox" name="storyform-use-featured-image" <?php echo $use_featured_image; ?> />
-				<?php esc_attr_e( 'Insert Featured Image into post as cover photo.', Storyform_Api::get_instance()->get_textdomain() ); ?>
-			</label>
+			<div class="storyform-post-options">
+				<div class="storyform-input-group">
+					<strong>Layout</strong>
+					<label class="storyform-radio-label"><input type="radio" class="storyform-layout-type" name="storyform-layout-type" value="freeflow" <?php echo $layout_type === 'freeflow' ? 'checked' : '' ?>/>Free flow <a id="storyform-layout-description-freeflow" class="storyform-layout-description"></a></label>
+					<div data-storyform-tooltip="storyform-layout-description-freeflow">
+						<div class="storyform-tooltip-title">Recommended when media applies to any part of the content.</div>
+						Spreads media throughout the content (images and video unpinned by default) and flows text across pages.
+					</div>
+					<label class="storyform-radio-label"><input type="radio" class="storyform-layout-type" name="storyform-layout-type" value="ordered" <?php echo $layout_type === 'ordered' ? 'checked' : '' ?>/>Ordered <a class="storyform-layout-description" id="storyform-layout-description-ordered"></a></label>
+					<div data-storyform-tooltip="storyform-layout-description-ordered">
+						<div class="storyform-tooltip-title">Recommended when media needs to maintain its placement.</div>
+						Maintains order of content (images and video pinned by default) and flows text across pages.
+					</div>
+					<label class="storyform-radio-label"><input type="radio" class="storyform-layout-type" name="storyform-layout-type" value="slideshow" <?php echo $layout_type === 'slideshow' ? 'checked' : '' ?>/>Slideshow <a class="storyform-layout-description" id="storyform-layout-description-slideshow"></a></label>
+					<div data-storyform-tooltip="storyform-layout-description-slideshow">
+						<div class="storyform-tooltip-title">Recommended when text regions shouldn’t be broken up.</div>
+						Maintains order of content (images and video pinned by default) and discourages the flow of text across pages.
+					</div>
+				</div>
+				<label id="storyform-use-featured-image">
+					<input class="storyform-form-item" type="checkbox" name="storyform-use-featured-image" <?php echo $use_featured_image; ?> />
+					<?php esc_attr_e( 'Insert Featured Image into post as cover photo.', Storyform_Api::get_instance()->get_textdomain() ); ?>
+				</label>
+			</div>
 			<script>
-				function xhr(options, cb){
-					var req = new XMLHttpRequest();
-					req.onreadystatechange = function () {
-						if (req.readyState === 4) {
-							if (req.status >= 200 && req.status < 300) {
-								cb(req);
-							} else {
-								cb(null, req);
-							}
-							req.onreadystatechange = function () { };
-						} else {
-							cb(null, null, req);
-						}
-					};
-
-					req.open('GET', options.url, false);
-					req.send();
-
-				}
-
-				var el = document.getElementById('storyform-templates-select');
-				var loading = document.getElementById('storyform-templates-loading');
-				var featuredImage = document.getElementById('storyform-use-featured-image');
-
-				<?php if( $template && $template != 'pthemedefault' ) { ?>
-
-				var option = document.createElement('option');
-				option.value = '<?php echo $template ?>';
-				option.textContent = '<?php echo $template ?>';
-				option.setAttribute('selected', true);
-				featuredImage.style.display = '';
-
-				el.appendChild(option);
-				el.appendChild(loading); // Move loading to the end
-
-				<?php } ?>
-
-				el.addEventListener('focus', function clickSelect(){
-					xhr({url: '<?php echo $apiversiondir ?>data/templategroups?app_key=<?php echo $app_key ?>'}, function(response, err){
-						if(response){
-							loading.parentNode.removeChild(loading);
-							var templates = JSON.parse(response.responseText);
-							templates.forEach(function(template){
-								if(template.id !== '<?php echo $template ?>'){
-									var option = document.createElement('option');
-									option.value = template.id;
-									option.textContent = template.id;
-									el.appendChild(option);
-								}
-								
-							});
-						} else if(err){
-							document.getElementById('storyform-status').textContent = 'Cannot retrieve templates. Ensure Settings > Storyform Settings > Application key is set correctly.';
-
-						}
-					});
-					el.removeEventListener('focus', clickSelect, false);
-				}, false);
-
-				el.addEventListener('change', function change(){
-					featuredImage.style.display = (this.value === 'pthemedefault') ? 'none' : '';	
-				}, false);
-				
+				var storyform = window.storyform || {};
+				storyform.template = '<?php if( $template && $template != 'pthemedefault' ) { echo $template; } ?>';
+				storyform.api_version_dir = '<?php echo $apiversiondir ?>';
+				storyform.app_key = '<?php echo $app_key ?>';
 			</script>
 
 		</p>
@@ -207,11 +157,15 @@ class Storyform_Admin_Meta_Box {
 		$template = sanitize_text_field( $_POST['storyform-templates'] );
 		$template = ( $template == 'pthemedefault' ) ? null: $template;
 		$name = sanitize_text_field( strtolower( $_POST['post_name'] ) );
+		$layout_type = sanitize_text_field( strtolower( $_POST['storyform-layout-type'] ) );
 		$use_featured_image = $_POST['storyform-use-featured-image'] === 'on';
-
+		
 		$options = Storyform_Options::get_instance();
 		$options->update_template_for_post( $id, $name, $template);
+		$options->update_layout_type_for_post( $id, $layout_type );
 		$options->update_use_featured_image_for_post( $id, $use_featured_image );
 
 	}
+
+
 }

@@ -5,9 +5,7 @@
  *
  */
 class Storyform_Api {
-    private $version        = '0.3';
-    private $staticHostname = 'http://static.storyform.co';
-    private $hostname       = 'http://storyform.co';
+    private $version        = '0.4';
     private $textdomain     = 'default';
 
     protected static $instance = false;
@@ -19,24 +17,41 @@ class Storyform_Api {
         return self::$instance;
     }
 
+    function get_static_hostname(){
+        if( defined( 'STORYFORM_LOCALHOST' ) && STORYFORM_LOCALHOST ){
+            return 'http://localhost/static';
+        } else {
+            return 'http://static.storyform.co';
+        }
+    }
+
+    function get_hostname(){
+
+        if( defined( 'STORYFORM_LOCALHOST' ) && STORYFORM_LOCALHOST ){
+            return 'http://localhost';
+        } else {
+            return 'http://storyform.co';
+        }
+    }
+
     function get_version(){
         return $this->version;
     }
 
     function get_css(){
-        return $this->staticHostname . '/v' . $this->version . '/css/read.css';
+        return $this->get_static_hostname() . '/v' . $this->version . '/css/read.css';
     }
 
     function get_js(){
-        return $this->staticHostname . '/v' . $this->version . '/js/read.js';
+        return $this->get_static_hostname() . '/v' . $this->version . ( defined( 'STORYFORM_LOCALHOST' ) && STORYFORM_LOCALHOST ? '/js/wp-localhost.js' : '/js/read.js' );
+    }
+
+    function get_static_version_directory(){
+        return $this->get_static_hostname() . '/v' . $this->version;
     }
 
     function get_version_directory(){
-        return $this->hostname . '/v' . $this->version . '/';
-    }
-
-    function get_hostname(){
-        return $this->hostname;
+        return $this->get_hostname() . '/v' . $this->version . '/';
     }
 
     function get_textdomain(){

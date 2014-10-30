@@ -27,6 +27,9 @@ With the Storyform platform you can turn your longform WordPress posts into a we
 - large photography
 - animations
 - rich video
+- captions
+
+https://vimeo.com/106440432
 
 = Docs, Support and Resources =
 
@@ -37,7 +40,7 @@ Visit the [Official Storyform Plugin Homepage](http://storyform.co/docs/wordpres
 Storyform is built to work with mainly HTML5 standard semantic article content. It attempts to remove any inline styling or extraneous elements and simply uses the underlying semantic elements. It then applies it's template layout and styling that you chose for the post. Storyform does not support:
 
 - `<object>` based videos or content
-- `<iframe>` embedded elements other than YouTube videos
+- `<iframe>` embedded elements other than YouTube, Vimeo videos
 - links or alignment attributes on embedded media
 
 
@@ -62,7 +65,7 @@ OR manually install the plugin:
 
 = Can I get an application key? =
 
-Storyform is only just getting started. We can't quite handle everyone yet and we want to make sure you have a great experience when we can. Until then, feel free to [request an app key](http://storyform.co) and we will get back to you once we are ready.
+Absolutely, just signup at [http://storyform.co/#signup](http://storyform.co/#signup).
 
 = When I preview my page it shows up blank. What's going on? =
 
@@ -76,6 +79,17 @@ Storyform is still a bit fragile. We are working out the kinks. Start by going t
 
 == Changelog ==
 
+= 0.4.0 =
+
+* New customizable Navbar including an editor in the settings page.
+* New Ordered and Slideshow layout types for more control over layout.
+* Support for YouTube and Vimeo videos
+* Now more compatible with other plugins and themes, with advanced settings for including external plugin and theme scripts.
+* Ability to set the featured image as the cover photo.
+* Pinned images to keep images in a specific position in the article.
+* Page break button in the editor.
+
+
 = 0.3.8 =
 
 * Rebrand of Narrative to Storyform
@@ -85,6 +99,17 @@ Storyform is still a bit fragile. We are working out the kinks. Start by going t
 * Removal of fallback to old theme when on an unsupported browser.
 
 == Upgrade Notice ==
+
+= 0.4.0 =
+
+* New customizable Navbar including an editor in the settings page.
+* New Ordered and Slideshow layout types for more control over layout.
+* Support for YouTube and Vimeo videos
+* Now more compatible with other plugins and themes, with advanced settings for including external plugin and theme scripts.
+* Ability to set the featured image as the cover photo.
+* Pinned images to keep images in a specific position in the article.
+* Page break button in the editor.
+
 
 = 0.3.8 =
 

@@ -4,6 +4,92 @@
 		prevTBremove,
 		awaitingCallback;
 
+	jQuery(document).ready(function(){
+		var select = jQuery('#storyform-templates-select');
+		var loading = jQuery('#storyform-templates-loading');
+		var postOptions = jQuery('.storyform-post-options');
+
+		if(storyform.template){
+			var option = document.createElement('option');
+			option.value = storyform.template;
+			option.textContent = storyform.template;
+			option.setAttribute('selected', true);
+			postOptions.show();
+			select.append(option);
+			select.append(loading); // Move loading to the end	
+		}
+
+		
+		if(select.val() === 'pthemedefault'){
+			postOptions.hide();
+		} 
+		
+		select.one("focus", function(){
+			jQuery.ajax({
+				url: storyform.api_version_dir + 'data/templategroups',
+				data: {
+					app_key: storyform.app_key,
+				},
+				type: 'GET',
+				dataType : "json",
+				success: function(json){
+					loading.remove();
+					var templates = json;
+					templates.forEach(function(template){
+						if(template.id !== storyform.template){
+							var option = document.createElement('option');
+							option.value = template.id;
+							option.textContent = template.id;
+							select.append(option);
+						}
+					});
+				},
+				error: function(){
+					document.getElementById('storyform-status').textContent = 'Cannot retrieve templates. Ensure Settings > Storyform Settings > Application key is set correctly.';
+				}
+			});
+		});
+
+		select.one("click", function(ev){
+			ev.preventDefault();
+		});
+
+		select.change(function change(){
+			if(this.value === 'pthemedefault'){
+				postOptions.hide();
+			} else {
+				postOptions.show();
+			}
+		});
+		
+		jQuery('.storyform-layout-type').change(function(){
+			var val = jQuery(this).val();
+			if(tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()){
+				tinyMCE.activeEditor.plugins.storyform.setLayoutType(val);	
+			} else {
+				var textarea = jQuery('#' + wpActiveEditor);
+				var text = textarea.val();
+				var decorational = val === 'freeflow' ? 'article' : 'pinned';
+				textarea.val(text.replace(/\sdata\-decorational(?:=[\'\"]([^\'\"]*)[\'\"])?/ig, ' data-decorational="' + decorational + '"'));
+			}
+			
+		});
+
+		jQuery('[data-storyform-tooltip]').map(function(index, el){
+			var html = el.outerHTML;
+			jQuery(el).hide();
+			var attr = el.getAttribute('data-storyform-tooltip');
+			jQuery( '#' + attr ).tooltip({ 
+				items: '*',
+				position: { my: "center top+10", at: "center bottom", collision: "flipfit" },
+				content: function(){
+					return '<div class="ui-tooltip-arrow-n"></div>' + html;
+				}
+			});	
+		});
+		
+	});
+
 	/**
 	 *	Initializes the attachment fields (shown on the edit media and media uploader pages) to setup events and display captions
 	 *

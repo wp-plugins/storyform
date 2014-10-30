@@ -12,6 +12,37 @@ class Storyform {
 	private $storyform_template;
 
 	/**
+	 *	The list of standard WordPress and Storyform actions that we want to still run on wp_head and wp_footer
+	 */
+	private static $default_functions = array(
+		'wp_enqueue_scripts' 					=> array( 'wp_head', 1 ),
+		'feed_links' 							=> array( 'wp_head', 2 ),
+		'feed_links_extra' 						=> array( 'wp_head', 3 ),
+		'rsd_link' 								=> array( 'wp_head' ),
+		'wlwmanifest_link'						=> array( 'wp_head' ),
+		'adjacent_posts_rel_link_wp_head'		=> array( 'wp_head', 10, 0 ),
+		'noindex'								=> array( 'wp_head', 1 ),
+		'wp_print_styles'						=> array( 'wp_head', 8 ),
+		'wp_print_head_scripts'					=> array( 'wp_head', 9 ),
+		'rel_canonical'							=> array( 'wp_head' ),
+		'wp_print_footer_scripts'				=> array( 'wp_footer', 20 ),
+		'wp_shortlink_wp_head'					=> array( 'wp_head', 10, 0 ),
+		'capital_P_dangit'						=> array( 'the_content', 11 ),
+		'wptexturize'							=> array( 'the_content' ),							
+		'convert_smilies'						=> array( 'the_content' ),							
+		'convert_chars'							=> array( 'the_content' ),							
+		'wpautop'								=> array( 'the_content' ),							
+		'shortcode_unautop'						=> array( 'the_content' ),							
+		'prepend_attachment'					=> array( 'the_content' ),
+		'do_shortcode'							=> array( 'the_content', 11 ),
+		'WP_Embed:autoembed'					=> array( 'the_content', 8 ),
+		'WP_Embed:run_shortcode'				=> array( 'the_content', 8 ),
+		'storyform_remove_src_attribute'		=> array( 'the_content', 5 )
+	);
+
+	private static $actions_to_filter = array( 'wp_head', 'wp_footer', 'wp_print_scripts', 'wp_print_styles', 'the_content' );
+
+	/**
 	 * 	Get the Singleton instance.
 	 */
 	public static function get_instance() {
@@ -20,6 +51,20 @@ class Storyform {
 		}
 		return self::$instance;
 	}
+
+	/**
+	 *	Gets the list of actions we are filtering on Storyform posts.
+	 */
+	public static function get_actions_to_filter() {
+		return self::$actions_to_filter;
+	}
+
+	/**
+	 *	Gets the list of default functions we don't filter on Storyform posts.
+	 */
+	public static function get_default_functions() {
+		return self::$default_functions;
+	}	
 
 	/*
 	 *	Returns the template in use, or null.
@@ -33,216 +78,107 @@ class Storyform {
 	 * Sets up the necessary actions and filters. 
 	 */
 	public function init(){
-		add_action( 'setup_theme', array( &$this, 'setup_theme' ) ); 	
 		add_filter( 'template_include', array( &$this, 'template_include' ), 9999 );
 	}
 
-	/**
-	 * Prior to setting up the theme we must determine the post ID or name and switch themes if specified.
-	 * We must parse the request ourselves since WordPress isn't fully running or requires repetitive DB requests.
-	 *
-	 */
-	function setup_theme(){
-		// Try to avoid loading the theme on non-VIP. VIP Quickstart requires we check this function not global.
-		if( ! function_exists( 'wpcom_vip_load_plugin' ) ) {
-			$ruri = $_SERVER['REQUEST_URI'];
-
-			$post = $this->storyform_url_to_post( $ruri );
-			if( $post ) {
-				$this->set_theme_if_post_matches( $post );
-			}
-		}
-	}
-
-	/**
-	 * Examine a url and try to determine the post ID or post name it represents.
-	 *
-	 * Adapted from url_to_postid, but we attempt to have no DB requests by ignoring page matches, looking
-	 * only at posts and not looking up the post ID when we have the post name we can use.
-	 *
-	 *
-	 * @param string $url Permalink to check.
-	 * @return int|string Post ID or Post Name or 0 on failure.
-	 */
-	function storyform_url_to_post( $url ) {
-		global $wp_rewrite;
-
-		// First, check to see if there is a 'p=N' or 'page_id=N' to match against
-		if ( preg_match('#[?&](p|page_id|attachment_id)=(\d+)#', $url, $values) )   {
-			$id = absint($values[2]);
-			if ( $id )
-				return $id;
-		}
-
-		// Check to see if we are using rewrite rules
-		$rewrite = $wp_rewrite->wp_rewrite_rules();
-
-		// Not using rewrite rules, and 'p=N' and 'page_id=N' methods failed, so we're out of options
-		if ( empty($rewrite) )
-			return 0;
-
-		// Get rid of the #anchor
-		$url_split = explode('#', $url);
-		$url = $url_split[0];
-
-		// Get rid of URL ?query=string
-		$url_split = explode('?', $url);
-		$url = $url_split[0];
-
-		// Add 'www.' if it is absent and should be there
-		if ( false !== strpos(home_url(), '://www.') && false === strpos($url, '://www.') )
-			$url = str_replace('://', '://www.', $url);
-
-		// Strip 'www.' if it is present and shouldn't be
-		if ( false === strpos(home_url(), '://www.') )
-			$url = str_replace('://www.', '://', $url);
-
-		// Strip 'index.php/' if we're not using path info permalinks
-		if ( !$wp_rewrite->using_index_permalinks() )
-			$url = str_replace( $wp_rewrite->index . '/', '', $url );
-
-		if ( false !== strpos( trailingslashit( $url ), home_url( '/' ) ) ) {
-			// Chop off http://domain.com/[path]
-			$url = str_replace(home_url(), '', $url);
-		} else {
-			// Chop off /path/to/blog
-			$home_path = parse_url( home_url( '/' ) );
-			$home_path = isset( $home_path['path'] ) ? $home_path['path'] : '' ;
-			$url = preg_replace( sprintf( '#^%s#', preg_quote( $home_path ) ), '', trailingslashit( $url ) );
-		}
-
-		// Trim leading and lagging slashes
-		$url = trim($url, '/');
-
-		$request = $url;
-		$post_type_query_vars = array();
-
-		foreach ( get_post_types( array() , 'objects' ) as $post_type => $t ) {
-			if ( ! empty( $t->query_var ) )
-				$post_type_query_vars[ $t->query_var ] = $post_type;
-		}
-
-
-		// Look for matches.
-		$request_match = $request;
-		foreach ( (array)$rewrite as $match => $query) {
-
-			// If the requesting file is the anchor of the match, prepend it
-			// to the path info.
-			if ( !empty($url) && ($url != $request) && (strpos($match, $url) === 0) )
-				$request_match = $url . '/' . $request;
-
-			if ( preg_match("#^$match#", $request_match, $matches) ) {
-				
-				if ( $wp_rewrite->use_verbose_page_rules && preg_match( '/pagename=\$matches\[([0-9]+)\]/', $query, $varmatch ) ) {
-					
-					// Removed from url_to_postid. We don't care about page matches.
-					// this is a verbose page match, lets check to be sure about it
-					// if ( ! get_page_by_path( $matches[ $varmatch[1] ] ) )
-					continue;
-				}
-
-				// Got a match.
-				// Trim the query of everything up to the '?'.
-				$query = preg_replace("!^.+\?!", '', $query);
-
-				// Substitute the substring matches into the query.
-				$query = addslashes(WP_MatchesMapRegex::apply($query, $matches));
-
-				// Filter out non-public query vars
-				global $wp;
-				parse_str( $query, $query_vars );
-				$query = array();
-				foreach ( (array) $query_vars as $key => $value ) {
-					if ( in_array( $key, $wp->public_query_vars ) ){
-						$query[$key] = $value;
-
-						// Added from url_to_postid to support post_id in permalink
-						if( $key === 'p' ){
-							return intval ( $value );
-						}
-
-						if ( isset( $post_type_query_vars[$key] ) ) {
-							$query['post_type'] = $post_type_query_vars[$key];
-							$query['name'] = $value;
-						}
-					}
-				}
-
-				/* Removed from url_to_postid. We can just use the post name as our key.
-				// Do the query
-				$query = new WP_Query( $query );
-				if ( ! empty( $query->posts ) && $query->is_singular )
-					return $query->post->ID;
-				else
-					return 0;
-				*/
-
-				if( isset( $query['name'] ) && $query['name'] ){
-					return $query['name'];    
-				} else {
-					return 0;
-				}
-			}
-		}
-		return 0;
-	}
-
-	/*
-	 *	Changes the theme to a fake one if the given identifier matches 
-	 *  what's been stored as a Storyform post.
-	 *	
-	 *	@param {String|int} post The post name or id.
-	 *
-	 */
-	function set_theme_if_post_matches( $post ){
-		if( $post == '') {
-			return;
-		}
-
-		$id = false;
-		if( strncmp( $post, '?p=', 3 ) == 0 ) {
-			$id = substr( $post, 3 );
-		} else if( strncmp( $post, '?page_id=', 9 ) == 0 ) {
-			$id = substr( $post, 9 );
-		} else if( is_int( $post ) ) {
-			$id = $post;
-		}
-
-		$template = Storyform_Options::get_instance()->get_template_for_post( $id, $post );
-
-		if( $template ) {
-			$this->storyform_template = $template;
-			add_filter( 'pre_option_stylesheet', array( &$this, 'get_stylesheet' ) );
-			add_filter( 'pre_option_template', array( &$this, 'get_template' ) );
-		}
-	}
-
-	function get_stylesheet() {
-		return 'storyform-fake-stylesheet';
-	}
-
-	function get_template() {
-		return 'storyform-fake-template';
-	}
-
 	/** 
-	 * Switches the template file (the actual HTML) to the one in this plugin, not to the theme's template and enqueues some
-	 * scripts/styles.
+	 * Switches the template file (the actual HTML) to the one in this plugin, not to the theme's template.
+	 * It also ensures just the right scripts and styles get loaded.
 	 *
 	 */
 	function template_include( $template ) {
+		global $content_width;
 		// Check if we are supposed to change this template
 		if( $this->get_storyform_template() ) {
-
-			add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_files' ), 10000 );
-			remove_action('wp_head', '_admin_bar_bump_cb'); // Removes the admin bar
 			$template = dirname( __FILE__ ) . '/theme/single-storyform.php';
 
-			add_action( 'wp_print_scripts', array( &$this, 'print_inline' ) );    	
+
+			// Remove all wp_head and wp_footer actions and script printing
+			$this->update_functions();
+			$this->remove_all_actions();
+			
+			add_action( 'wp_print_scripts', array( &$this, 'print_inline' ) );
+			add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_files' ), 10000 );
+
+
+			$content_width = 1024;
 		}
 
 		return $template;
+	}
+
+	/**
+	 *	Removes all action-hooked functions we care about that are not in the default list or selected by the user.
+	 *
+	 */
+	protected function remove_all_actions() {
+		foreach( Storyform::get_actions_to_filter() as $tag ) {
+			$this->remove_actions( $tag );
+		}
+	}
+
+	public function remove_actions( $tag ) {
+		global $wp_filter;
+
+		$selected_functions = Storyform_Options::get_instance()->get_selected_functions();
+		foreach( $wp_filter[$tag] as $priority => $functions ){
+			foreach( $functions as $function ){
+				$name = Storyform::get_persistent_callback_id( $function['function'] );
+				if( !in_array( $name, array_keys( Storyform::get_default_functions() ) ) && !in_array( $name, $selected_functions )  ){
+					remove_action( $tag, $function['function'], $priority );
+				}
+			}
+		}
+	}
+
+	/**
+	 *	Update our settings page with the list of all possible functions the author might want to allow
+	 *
+	 */
+	protected function update_functions(){
+		global $wp_filter;
+
+		$all_functions = array();
+		foreach( Storyform::get_actions_to_filter() as $tag ){
+			foreach( $wp_filter[$tag] as $priority => $functions ){
+				foreach( $functions as $function ){
+					$name = Storyform::get_persistent_callback_id( $function['function'] );
+					array_push( $all_functions, $name );
+				}
+			}	
+		}
+		$non_default_functions = array_diff( $all_functions, array_keys( Storyform::get_default_functions() ) );
+		
+		$current_list = Storyform_Options::get_instance()->get_all_functions();
+		if( count( array_diff( $non_default_functions, $current_list ) ) ){
+			Storyform_Options::get_instance()->update_all_functions( $non_default_functions );
+		}
+	}
+
+	/*
+	 *	Similar to _wp_filter_build_unique_id this gets a global identifier for a function, but generates one that 
+	 *  is persistent across sessions, albeit we can't truely identify two instances of the same class.
+	 *
+	 */
+	public static function get_persistent_callback_id( $function ){
+		if ( is_string( $function ) ){
+			return $function;
+		}
+
+		if ( is_object( $function ) ) {
+			// Closures are currently implemented as objects
+			$function = array( $function, '' );
+		} else {
+			$function = (array) $function;
+		}
+
+		if (is_object( $function[0] ) ) {
+			return get_class( $function[0] ) . ":" . $function[1];
+			
+		} else if ( is_string( $function[0] ) ) {
+			// Static Calling
+			return $function[0] . '::' . $function[1];
+		}
 	}
 
 	/*
@@ -267,6 +203,7 @@ class Storyform {
 	 */
 	function enqueue_files() {
 		global $wp_styles;
+		global $wp_scripts;
 
 		// Dequeue all enqueued styles by default
 		$default_dequeue_styles = array();
@@ -289,15 +226,30 @@ class Storyform {
 			}
 		}
 
-		// Most scripts by default don't conflict with Storyform
+		// Dequeue all enqueued scripts by default
 		$default_dequeue_scripts = array();
+		if ( is_a( $wp_scripts, 'WP_Scripts' ) ) {
+			foreach( $wp_scripts->queue as $key => $value ){
+				array_push( $default_dequeue_scripts, $value );
+			}
+		}
+
+		// Check if any new scripts have been registered and store them so we can present them to the user in settings
+		$all_scripts = Storyform_Options::get_instance()->get_all_scripts();
+		if( count( array_diff( $default_dequeue_scripts, $all_scripts ) ) ) {
+			Storyform_Options::get_instance()->update_all_scripts( $default_dequeue_scripts );
+		}
+
+		// Do not dequeue those the user chose to keep
+		$selected_scripts = Storyform_Options::get_instance()->get_selected_scripts();
+		$selected_dequeue_scripts = array_diff( $default_dequeue_scripts, $selected_scripts );
 		 
 		/**
 		 * Filter the scripts to dequeue on Storyform posts.
 		 *
-		 * @param array $scripts The scripts that will be dequeued. Defaults to none.
+		 * @param array $scripts The scripts that will be dequeued. Defaults to all scripts.
 		 */
-		$dequeue_scripts = apply_filters( 'storyform-dequeue-scripts', $default_dequeue_scripts );
+		$dequeue_scripts = apply_filters( 'storyform-dequeue-scripts', $selected_dequeue_scripts );
 
 		if ( $dequeue_scripts && is_array( $dequeue_scripts ) ) {
 			foreach ( $dequeue_scripts as $handle ) {
@@ -315,15 +267,17 @@ class Storyform {
 	 *	Specify the Storyform template to use, version and host in the client HTML
 	 */
 	function print_inline() {
+		global $storyform_plugin_identifier;
 		?>
 		 <script>
 			var _template = {
 				group: '<?php echo $this->get_storyform_template() ?>',
 				version: 'v<?php echo Storyform_Api::get_instance()->get_version() ?>',
-				host: '<?php echo Storyform_Api::get_instance()->get_hostname() ?>'
+				host: '<?php echo Storyform_Api::get_instance()->get_hostname() ?>',
+				generator: '<?php echo $storyform_plugin_identifier ?>'
 			};
 
-			/*-- START RENDER SCRIPT --*/!function(a){function b(a,b){var c=new XMLHttpRequest;c.onreadystatechange=function(){4===c.readyState&&(c.status>=200&&c.status<300?b(null,c):b(c),c.onreadystatechange=function(){})},c.open("GET",a.uri,!0),c.send()}document.documentElement.className+=" js";var c=void 0===_template.host?"http://storyform.co":_template.host,d=_template.version||"v0.3",e=c+"/"+d+"/render/"+a._template.group+"?uri="+encodeURIComponent(document.location.href)+"&lastModified="+encodeURIComponent(document.lastModified)+"&templateGroup="+encodeURIComponent(_template.group)+"&width="+window.innerWidth+"&height="+window.innerHeight+"&deviceWidth="+window.screen.width+"&deviceHeight="+window.screen.height;a.App={Data:{render:{callback:function(){},data:null,uri:e}}},b({uri:e},function(b,c){if(c){var d=a.App.Data.render.data=JSON.parse(c.responseText);a.App.Data.render.callback(null,d),a.App.Data.render.callback=function(){}}else a.App.Data.render.callback(b),a.App.Data.render.callback=function(){}})}(this);/*-- END RENDER SCRIPT --*/
+			/*-- START RENDER SCRIPT --*/!function(a){function b(a,b){var c=new XMLHttpRequest;c.onreadystatechange=function(){4===c.readyState&&(c.status>=200&&c.status<300?b(null,c):b(c),c.onreadystatechange=function(){})},c.open("GET",a.uri,!0),c.send()}document.documentElement.className+=" js";var c=void 0===_template.host?"http://storyform.co":_template.host,d=_template.version||"v0.4",e=_template.generator?"&generator="+_template.generator:"",f=c+"/"+d+"/render/"+a._template.group+"?uri="+encodeURIComponent(document.location.href)+"&lastModified="+encodeURIComponent(document.lastModified)+"&templateGroup="+encodeURIComponent(_template.group)+"&width="+window.innerWidth+"&height="+window.innerHeight+"&deviceWidth="+window.screen.width+"&deviceHeight="+window.screen.height+e;a.App={Data:{render:{callback:function(){},data:null,uri:f}}},b({uri:f},function(b,c){if(c){var d=a.App.Data.render.data=JSON.parse(c.responseText);a.App.Data.render.callback(null,d),a.App.Data.render.callback=function(){}}else a.App.Data.render.callback(b),a.App.Data.render.callback=function(){}})}(this);/*-- END RENDER SCRIPT --*/
 		</script>
 		<?php
 	}

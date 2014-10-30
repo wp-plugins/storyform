@@ -13,6 +13,9 @@ function storyform_not_empty( $item ) {
  *
  */
 function storyform_admin_enqueue_scripts( $hook ) {
+	wp_register_script( "storyform-media", plugin_dir_url( __FILE__ ) . 'storyform-media.js', array( 'thickbox', 'jquery-ui-tooltip' ) );
+	wp_register_style( "storyform-media", plugin_dir_url( __FILE__ ) . 'storyform-media.css');
+
 	if( 'post.php' != $hook && 'post-new.php' != $hook && 'upload.php' != $hook ) {
 		return;
 	}
@@ -20,9 +23,9 @@ function storyform_admin_enqueue_scripts( $hook ) {
 	wp_enqueue_style( "thickbox" );
 	wp_enqueue_script( "thickbox" );
 
-	wp_enqueue_style( "storyform-media", plugin_dir_url( __FILE__ ) . 'storyform-media.css' );
-	wp_register_script( "storyform-media", plugin_dir_url( __FILE__ ) . 'storyform-media.js', array( 'thickbox' ) );
+	//wp_enqueue_style( 'jquery-theme', '//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css');
 	wp_enqueue_script( "storyform-media");
+	wp_enqueue_style( "storyform-media");
 }
 add_action( 'admin_enqueue_scripts', 'storyform_admin_enqueue_scripts' );
 
@@ -46,6 +49,8 @@ add_action( 'admin_print_scripts',  'storyform_admin_print_scripts' ) ;
  *
  */
 function storyform_attachment_fields_to_edit( $form_fields, $post ){
+	wp_enqueue_script( "storyform-media");
+	
 	$url = esc_js( wp_get_attachment_url( $post->ID ) );
 	$metadata = wp_get_attachment_metadata( $post->ID );
 	$storyformMeta = get_post_meta( $post->ID, 'storyform_text_overlay_areas', true );
@@ -61,7 +66,7 @@ function storyform_attachment_fields_to_edit( $form_fields, $post ){
 				storyform.attachment = { 
 					url: "' . $url . '"
 				};
-				storyform.initAttachmentFields();
+				storyform.initAttachmentFields && storyform.initAttachmentFields();
 			</script>' .
 		'</div>'
 	);
@@ -121,48 +126,68 @@ function storyform_read_single_overlay ( $overlay ) {
 
 /**
  *
- *  Adds data(-)sources attributes to <img> tag when inserted into editor from Media library which 
+ *  Adds data(-)sources attributes to media when inserted into editor from Media library which 
  *  enables responsive images to choose the best image to load on the client.
  *
  */
-if( ! function_exists( 'storyform_image_send_to_editor' )) :
-function storyform_image_send_to_editor( $html, $id, $caption, $title, $align, $url, $size, $alt ) {
-	$datasources = storyform_attachment_to_datasources( $id );
+if( ! function_exists( 'storyform_media_send_to_editor' )) :
+function storyform_media_send_to_editor( $html, $attachment_id, $attachment ) {
+	$post = get_post( $attachment_id );
+	if ( substr($post->post_mime_type, 0, 5) == 'image' || substr($post->post_mime_type, 0, 5) == 'video' ) {
 
-	$textOverlay = get_post_meta( $id, 'storyform_text_overlay_areas', true );
-	$textOverlay = $textOverlay ? 'data-text-overlay="' . esc_attr( $textOverlay ). '"' : '';
+		$datasources = storyform_attachment_to_datasources( $attachment_id );
+		$datasources = $datasources ? 'data-sources="' . $datasources . '"' : '';
 
-	// Add data-source attribute to the <img> tag (whether or not its surrounded by caption shortcode).
-	// Already escaped in the function
-	return preg_replace( '/<img /', '<img ' . $textOverlay . ' data-sources="' . $datasources . '" ', $html);
+		$textOverlay = get_post_meta( $attachment_id, 'storyform_text_overlay_areas', true );
+		$textOverlay = $textOverlay ? 'data-text-overlay="' . esc_attr( $textOverlay ). '"' : '';
 
+		$post_id = intval( $_POST['post_id'] );
+
+		$layout_type = Storyform_Options::get_instance()->get_layout_type_for_post( $post_id );
+		$decorational = ( $layout_type === 'freeflow' ) ? 'article' : 'pinned';
+
+		// Add data-source attribute to the <img> tag (whether or not its surrounded by caption shortcode).
+		// Already escaped in the function
+		return preg_replace( '/(\<img|\[video) /', '$1 ' . $textOverlay . ' data-decorational="' . $decorational . '" ' . $datasources . ' ', $html);
+	}
+
+	return $html;
 }
 endif;
-add_filter( 'image_send_to_editor', 'storyform_image_send_to_editor', 30, 8 );
+add_filter( 'media_send_to_editor', 'storyform_media_send_to_editor', 30, 3 );
+
 
 /**
- *	Allow data-text-overlay and data-source attributes that would otherwise get stripped in VIP.
+ *	Allow data-text-overlay, data-decorational, data-source attributes that would otherwise get stripped in VIP.
  *
  */
 function storyform_media_init() {
-    global $allowedposttags;
- 
-    $tags = array( 'img' );
-    $new_attributes = array( 'data-text-overlay' => array(), 'data-sources' => array() );
- 
-    foreach ( $tags as $tag ) {
-        if ( isset( $allowedposttags[ $tag ] ) && is_array( $allowedposttags[ $tag ] ) )
-            $allowedposttags[ $tag ] = array_merge( $allowedposttags[ $tag ], $new_attributes );
-    }
+    $tags = array( 'img', 'video' );
+    $new_attributes = array( 'data-text-overlay' => array(), 'data-sources' => array(), 'data-decorational' => array() );
+ 	_storyform_add_allowed_attrs( $tags, $new_attributes );
+ 	
+ 	$tags = array( 'video' );
+    $new_attributes = array( 'nocontrols' => array(), 'noloop' => array(), 'autopause' => array() );
+    _storyform_add_allowed_attrs( $tags, $new_attributes );
+
 }
 add_action( 'init', 'storyform_media_init' );
 
+function _storyform_add_allowed_attrs( $tags, $new_attributes ){
+	global $allowedposttags;
+	foreach ( $tags as $tag ) {
+        if ( isset( $allowedposttags[ $tag ] ) && is_array( $allowedposttags[ $tag ] ) ) {
+            $allowedposttags[ $tag ] = array_merge( $allowedposttags[ $tag ], $new_attributes );
+        }
+    }
+}
+
 /**
- *	Allow data-text-overlay and data-source attributes to remain between visual and text views.
+ *	Allow data-text-overlay, data-decorational, data-source attributes to remain between visual and text views.
  *
  */
 function storyform_tiny_mce_before_init( $init ) { 
-	$init['extended_valid_elements'] = isset( $init['extended_valid_elements'] ) ? $init['extended_valid_elements'] . ',img[*]' : 'img[*]';
+	$init['extended_valid_elements'] = isset( $init['extended_valid_elements'] ) ? $init['extended_valid_elements'] . ',img[*],video[*]' : 'img[*],video[*]';
 	return $init;
 }
 add_filter('tiny_mce_before_init', 'storyform_tiny_mce_before_init'); 
@@ -177,6 +202,9 @@ function storyform_attachment_to_datasources( $id ) {
 	$img_url_basename = wp_basename( $img_url );
 
 	$full = wp_get_attachment_image_src( $id, 'full' );
+	if( !$full[2] ){
+		return '';
+	}
 	$fullAspect = $full[1] / $full[2];
 
 	$datasources = array($img_url . ' 1x ' . $full[1] . 'w ' . $full[2] . 'h');
@@ -204,6 +232,9 @@ function storyform_attachment_to_datasources( $id ) {
 				$url = str_replace( $img_url_basename, $intermediate['file'], $img_url );
 				$width = $intermediate['width'];
 				$height = $intermediate['height'];
+				if( !$height ){
+					continue;
+				}
 				$aspect = $width / $height;
 
 				// Only use scaled images not cropped images (pixel rounding can occur, thus the 0.01)
@@ -278,6 +309,8 @@ add_action( 'after_setup_theme', 'storyform_media_setup' );
 function storyform_wp(){
 	if( Storyform::template_in_use() ) {
 		add_filter( 'img_caption_shortcode', 'storyform_caption_shortcode', 10, 3 );
+		add_filter( 'wp_video_shortcode', 'storyform_video_shortcode', 10, 2 );
+		add_filter( 'shortcode_atts_video', 'storyform_shortcode_atts_video', 10, 3 );
 		add_filter( 'the_content', 'storyform_remove_src_attribute', 5 ); // Run before so there is a src attribute to push to data-sources where other lazyloaders might get to it first
 		add_filter( 'wp_get_attachment_image_attributes', 'storyform_get_attachment_image_attributes', 10, 2 );
 		add_filter( 'post_thumbnail_size', 'storyform_post_thumbnail_size', 1000 );
@@ -340,6 +373,13 @@ function storyform_caption_shortcode( $val, $attr, $content = null ) {
 	 *      <area shape=“rect” coords=“100,200,300,300” class=“dark-theme otherClass” />
 	 * </map>
 	 */
+
+	// Used to elevate data-decorational from the <img> element up to the figure element
+	$dataDecorationalPattern = '/\sdata\-decorational(?:=[\'\"]([^\'\"]*)[\'\"])?/i';
+	$dataDecorational = '';
+	if(preg_match( $dataDecorationalPattern, $content, $decorationalMatch )){
+		$dataDecorational = $decorationalMatch[0];
+	}
 
 	$mapshtml = '';
 
@@ -424,7 +464,7 @@ function storyform_caption_shortcode( $val, $attr, $content = null ) {
 	if ( $id ) {
 		$idtag = 'id="' . esc_attr( $id ) . '" ';
 	}
-	return '<figure ' . $idtag . 'aria-describedby="figcaption_' . $id . '" >' . $html . '<figcaption>' . $caption . '</figcaption></figure>' . wp_kses_post( $mapshtml );
+	return '<figure ' . $idtag . 'aria-describedby="figcaption_' . $id . '" ' . $dataDecorational . ' >' . $html . '<figcaption>' . $caption . '</figcaption></figure>' . wp_kses_post( $mapshtml );
 		
 }
 endif; // storyform_caption_shortcode
@@ -469,6 +509,53 @@ function storyform_parse_data_sources( $str ){
 	}
 }
 endif; // storyform_parse_data_sources
+
+/**
+ *	Removes the controls attribute by default on Storyform posts. Only if the user specifies it in the shortcode.
+ *  Otherwise it will get deferred to the presentational layer (templates).
+ *
+ */
+if( ! function_exists( 'storyform_video_shortcode' ) ) :
+function storyform_video_shortcode( $output, $atts ){
+	if( !isset( $atts['controls'] ) ){
+		$output = str_replace( 'controls="controls"', '', $output );
+	}
+
+	if( isset( $atts['nocontrols'] ) ){
+		$output = preg_replace( '/\<video\s/', '<video nocontrols="nocontrols" ', $output);
+	}
+
+	if( isset( $atts['noloop'] ) ){
+		$output = preg_replace( '/\<video\s/', '<video noloop="noloop" ', $output);
+	}
+
+	if( isset( $atts['autopause'] ) ){
+		$output = preg_replace( '/\<video\s/', '<video autopause="autopause" ', $output);
+	}
+
+	if( isset( $atts['data-decorational'] ) ){
+		$output = preg_replace( '/\<video\s/', '<video data-decorational="' . $atts['data-decorational'] . '" ', $output);
+	}
+
+	return $output;
+}
+endif;
+
+/**
+ *	Adds controls, nocontrols, noloop, autopause attributes on shortcode.
+ *
+ */
+if( ! function_exists( 'storyform_shortcode_atts_video' ) ) :
+function storyform_shortcode_atts_video( $out, $pairs, $atts ){
+	$supported = array( 'controls', 'nocontrols', 'noloop', 'autopause', 'data-decorational' );
+	foreach ( $atts as $name => $value ) {
+		if( in_array( $value, $supported ) ) {
+			$out[$value] = $value;
+		}
+	}
+	return $out;
+}
+endif;
 
 /**
  *	Removes src attribute to do lazy-loading. Only replaces the src attribute with a placeholder if

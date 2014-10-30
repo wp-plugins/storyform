@@ -1,0 +1,110 @@
+@font-face {
+	font-family:"storyform-icons";
+	src:url("data:application/x-font-woff;charset=utf-8;base64,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") format("woff"),
+		url("../fonts/storyform-icons-6b29f98659cf80708b18874e74b67d62.ttf") format("truetype");
+	font-weight:normal;
+	font-style:normal;
+}
+
+#TB_window {
+	z-index:170000; /* Above Wordpress Media Modal (uploader, library, etc.) */
+}
+
+.storyform-overlay-save {
+	color:red;
+}
+
+/* TinyMCE buttons */
+.mce-i-break-before-page:before, .mce-i-pullquote:before {
+	font-family: "storyform-icons";
+}
+
+.mce-i-break-before-page:before {
+	content:"\f102";
+}
+
+.mce-i-pullquote:before {
+	content:"\f101";
+}
+
+
+/* Meta-box */
+#storyform-status {
+	padding: 0;
+	margin: 0;
+	color: red;
+}
+
+.storyform-form-item {
+	margin-bottom:10px;
+}
+
+.storyform-input-group {
+	margin-bottom: 10px;
+}
+
+.storyform-radio-label{
+	display:block;
+	margin-top:4px;
+}
+
+.storyform-layout-description{
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	margin-left: 10px;
+	
+}
+
+.storyform-layout-description:before{
+	font-family: 'storyform-icons';
+	font-size: 15px;
+	line-height: 20px;
+	color: rgb(34,34,34);
+	content:"\f109";
+}
+
+.ui-tooltip {
+	padding: 5px;
+	position: absolute;
+	z-index: 9999;
+	max-width: 220px;
+	background-color:#000;
+	border-width: 2px;
+	opacity:.8;
+	filter:alpha(opacity=80);
+	zoom:1;
+	-webkit-border-radius:3px;
+	-moz-border-radius:3px;
+	border-radius:3px;
+	-webkit-box-shadow:0 0 5px #000000;
+	-moz-box-shadow:0 0 5px #000000;
+	box-shadow:0 0 5px #000000;
+}
+
+.ui-tooltip-content {
+	color: #FFF;
+	padding:5px 8px 4px 8px;
+	font-size:11px;
+	font-style: italic;
+}
+
+.storyform-tooltip-title{
+	font-weight: bold;
+	font-style: normal;
+	margin-bottom: 10px;
+	padding: 0;
+}
+
+.ui-tooltip-arrow-n {
+	top: -5px;
+	left: 50%;
+	margin-left: -5px;
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-bottom: 5px solid #000;
+	position: absolute;
+	width: 0;
+	height: 0;
+	line-height: 0;
+}

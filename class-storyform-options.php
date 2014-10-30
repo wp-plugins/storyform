@@ -193,7 +193,7 @@ class Storyform_Options {
 		} 
 
 		if( !isset( $controls ) ){
-			$controls = ['facebook', 'twitter', 'gplus', 'fullscreen'];
+			$controls =  array('facebook', 'twitter', 'gplus', 'fullscreen');
 		}
 
 		return $controls;

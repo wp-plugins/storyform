@@ -121,13 +121,15 @@ class Storyform {
 		global $wp_filter;
 
 		$selected_functions = Storyform_Options::get_instance()->get_selected_functions();
-		foreach( $wp_filter[$tag] as $priority => $functions ){
-			foreach( $functions as $function ){
-				$name = Storyform::get_persistent_callback_id( $function['function'] );
-				if( !in_array( $name, array_keys( Storyform::get_default_functions() ) ) && !in_array( $name, $selected_functions )  ){
-					remove_action( $tag, $function['function'], $priority );
+		if( isset( $wp_filter[$tag] ) ){
+			foreach( $wp_filter[$tag] as $priority => $functions ){
+				foreach( $functions as $function ){
+					$name = Storyform::get_persistent_callback_id( $function['function'] );
+					if( !in_array( $name, array_keys( Storyform::get_default_functions() ) ) && !in_array( $name, $selected_functions )  ){
+						remove_action( $tag, $function['function'], $priority );
+					}
 				}
-			}
+			}	
 		}
 	}
 
@@ -140,12 +142,14 @@ class Storyform {
 
 		$all_functions = array();
 		foreach( Storyform::get_actions_to_filter() as $tag ){
-			foreach( $wp_filter[$tag] as $priority => $functions ){
-				foreach( $functions as $function ){
-					$name = Storyform::get_persistent_callback_id( $function['function'] );
-					array_push( $all_functions, $name );
-				}
-			}	
+			if( isset( $wp_filter[$tag] ) ){
+				foreach( $wp_filter[$tag] as $priority => $functions ){
+					foreach( $functions as $function ){
+						$name = Storyform::get_persistent_callback_id( $function['function'] );
+						array_push( $all_functions, $name );
+					}
+				}	
+			}
 		}
 		$non_default_functions = array_diff( $all_functions, array_keys( Storyform::get_default_functions() ) );
 		

@@ -26,7 +26,7 @@ function storyform_register_buttons( $buttons ) {
 function storyform_add_editor_styles() {
 	add_editor_style( plugin_dir_url( __FILE__ ) . 'storyform-editor-style.css' );
 }
-add_action( 'pre_get_posts', 'storyform_add_editor_styles' );
+add_action( 'after_setup_theme', 'storyform_add_editor_styles' );
 
 
 /*

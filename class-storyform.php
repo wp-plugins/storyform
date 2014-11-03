@@ -262,8 +262,8 @@ class Storyform {
 		}
 
 		$instance = Storyform_Api::get_instance();
-		wp_enqueue_script( 'narrative_js', $instance->get_js(), array(), false, false );
-		wp_enqueue_style( 'narrative_css', $instance->get_css(), array(), false, false );
+		wp_enqueue_script( 'storyform_js', $instance->get_js(), array(), false, false );
+		wp_enqueue_style( 'storyform_css', $instance->get_css(), array(), false, false );
 
 	}
 

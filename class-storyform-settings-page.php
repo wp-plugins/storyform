@@ -442,6 +442,13 @@ class Storyform_Settings_Page
 		return $description;
 	}
 
+	protected function sort_dir($a, $b){
+		if ($a['dir'] === $b['dir']) {
+	        return 0;
+	    }
+	    return ($a['dir'] < $b['dir']) ? -1 : 1;
+	}
+
 	/**
 	 *  Display whether to allow certain plugin or theme functions to be called for Storyform posts.
 	 */
@@ -461,12 +468,7 @@ class Storyform_Settings_Page
 			array_push( $functions, array( 'name' => $name, 'dir' => $dir, 'selected' => $selected ) );
 		}
 
-		usort( $functions, function($a, $b){
-			if ($a['dir'] === $b['dir']) {
-		        return 0;
-		    }
-		    return ($a['dir'] < $b['dir']) ? -1 : 1;
-		});
+		usort( $functions, array( $this, 'sort_dir' ) );
 
 		if( !count( $functions ) ){
 			print( "<small>There are no functions to allow. Be sure to view a Storyform post to populate new functions.</small>" );

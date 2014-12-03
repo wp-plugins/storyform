@@ -261,18 +261,26 @@ class Storyform_Settings_Page
 					var dashboard = StoryformWidgets.getControlForElement(document.querySelector('.storyform-settings-dashboard'));
 					dashboard.addSite(site);
 					jQuery.post(ajaxurl, { action : 'storyform_save_site_registered', _ajax_nonce: '<?php echo $ajax_nonce_site_registered; ?>' });
-					if(!appKey){
-						dashboard.getAppKey().then(function(appKey){
-							var data = {
-								'action': 'storyform_save_app_key',
-								'app_key': appKey,
-								'_ajax_nonce': '<?php echo $ajax_nonce; ?>'
-							};
-							jQuery.post(ajaxurl, data, function(response) {
-								// TODO: What if there was an error?
-							});
-						});
+					
+
+					var getAppKey = function(){
+						dashboard.getAppKey(appKey).then(function(newKey){
+							if(appKey.toLowerCase() !== newKey.toLowerCase()){
+								var data = {
+									'action': 'storyform_save_app_key',
+									'app_key': newKey,
+									'_ajax_nonce': '<?php echo $ajax_nonce; ?>'
+								};
+								jQuery.post(ajaxurl, data, function(response) {
+									// TODO: What if there was an error?
+								});
+							}
+						});	
 					}
+
+					dashboard.addEventListener('refresh', getAppKey, false);
+					getAppKey();
+					
 				});
 
 			})()

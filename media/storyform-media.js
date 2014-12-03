@@ -276,7 +276,7 @@
 	 *
 	 */
 	function messageReceived(ev){
-		if(ev.origin !== storyform.url){
+		if(ev.origin.indexOf(storyform.url) == -1){
 			return;
 		}
 

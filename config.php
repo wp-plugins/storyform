@@ -5,7 +5,7 @@
  *
  */
 class Storyform_Api {
-    private $version        = '0.4';
+    private $version        = '0.5';
     private $textdomain     = 'default';
 
     protected static $instance = false;
@@ -19,18 +19,18 @@ class Storyform_Api {
 
     function get_static_hostname(){
         if( defined( 'STORYFORM_LOCALHOST' ) && STORYFORM_LOCALHOST ){
-            return 'http://localhost/static';
+            return '//localhost/static';
         } else {
-            return 'http://static.storyform.co';
+            return '//static.storyform.co';
         }
     }
 
     function get_hostname(){
 
         if( defined( 'STORYFORM_LOCALHOST' ) && STORYFORM_LOCALHOST ){
-            return 'http://localhost';
+            return '//localhost';
         } else {
-            return 'http://storyform.co';
+            return '//storyform.co';
         }
     }
 

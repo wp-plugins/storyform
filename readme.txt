@@ -2,7 +2,7 @@
 === Storyform ===
 
 Contributors: RylanH
-Donate link: http://storyform.co
+Donate link: https://storyform.co
 Tags: storyform, narrative, magazine, longform, photography, slider
 Requires at least: 2.6.1
 Tested up to: 4.0.0
@@ -14,7 +14,7 @@ The Storyform plugin let's you create rich, immersive Storyform magazines with j
 
 == Description ==
 
-The Storyform plugin let's you selectively choose posts to apply the [Storyform](http://storyform.co) platform to. Easily set your application key and choose which Storyform templates to use on each post.
+The Storyform plugin let's you selectively choose posts to apply the [Storyform](https://storyform.co) platform to. Easily set your application key and choose which Storyform templates to use on each post.
 
 With the Storyform platform you can turn your longform WordPress posts into a well-designed magazine-style article. The Storyform platform supports print-like features such as:
 
@@ -31,9 +31,11 @@ With the Storyform platform you can turn your longform WordPress posts into a we
 
 https://vimeo.com/106440432
 
+https://vimeo.com/106440432
+
 = Docs, Support and Resources =
 
-Visit the [Official Storyform Plugin Homepage](http://storyform.co/docs/wordpress) for more detailed information or [Storyform](http://storyform.co) to hear more about the platform.
+Visit the [Official Storyform Plugin Homepage](//storyform.co/docs/wordpress) for more detailed information or [Storyform](//storyform.co) to hear more about the platform.
 
 = Using Storyform =
 
@@ -51,21 +53,21 @@ Use the built-in wordpress admin installation mechanism (recommended):
 1. Go to your Wordpress admin page, choose 'Plugins' in the menu.
 1. Click 'Add New', search for 'Storyform', click 'Install Now'.
 1. Activate the plugin.
-1. Go to the 'Settings' > 'Wordpress settings' page in your admin portal and enter your [application key](http://storyform.co).
+1. Go to the 'Settings' > 'Wordpress settings' page in your admin portal and enter your [application key](//storyform.co).
 1. Go to the desired post's edit page and find the Storyform meta box to set the appropriate Storyform templates to use.
 
 OR manually install the plugin:
 
 1. Upload the entire storyform folder to the /wp-content/plugins/ directory.
 1. Activate the plugin through the 'Plugins' menu in WordPress.
-1. Go to the 'Settings' > 'Wordpress settings' page in your admin portal and enter your [application key](http://storyform.co).
+1. Go to the 'Settings' > 'Wordpress settings' page in your admin portal and enter your [application key](//storyform.co).
 1. Go to the desired post's edit page and find the Storyform meta box to set the appropriate Storyform templates to use.
 
 == Frequently Asked Questions ==
 
 = Can I get an application key? =
 
-Absolutely, just signup at [http://storyform.co/#signup](http://storyform.co/#signup).
+Absolutely, just signup at [https://storyform.co/#signup](https://storyform.co/#signup).
 
 = When I preview my page it shows up blank. What's going on? =
 
@@ -78,6 +80,14 @@ Storyform is still a bit fragile. We are working out the kinks. Start by going t
 1. Rich edge to edge images.
 
 == Changelog ==
+
+= 0.5.0 =
+
+* Now supporting v0.5 of Storyform
+* Storyform v0.5 includes user accounts and premium features
+* Storyform now includes a template editor for customizing the look and feel of your articles
+* New user account dashboard in the settings page for user login
+* HTTPS support for Pro users
 
 = 0.4.0 =
 
@@ -99,6 +109,14 @@ Storyform is still a bit fragile. We are working out the kinks. Start by going t
 * Removal of fallback to old theme when on an unsupported browser.
 
 == Upgrade Notice ==
+
+= 0.5.0 =
+
+* Now supporting v0.5 of Storyform
+* Storyform v0.5 includes user accounts and premium features
+* Storyform now includes a template editor for customizing the look and feel of your articles
+* New user account dashboard in the settings page for user login
+* HTTPS support for Pro users
 
 = 0.4.0 =
 

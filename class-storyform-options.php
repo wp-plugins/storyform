@@ -20,6 +20,21 @@ class Storyform_Options {
 		return self::$instance;
 	}
 
+	public function get_settings(){
+		$settings = get_option( 'storyform_settings' );
+		if( !$settings ){
+			$result = array();
+		} else {
+			// Make a copy so we can update at the same time
+			$result = array();
+			foreach($settings as $key=>$value){
+				$result[$key] = $value;
+			}
+		}
+
+		return $result;
+	}
+
 	/**
 	 * Gets the Storyform template for a give Post Id or Post name. Id is preferred
 	 *
@@ -92,10 +107,10 @@ class Storyform_Options {
 	 *
 	 */
 	function get_application_key(){
-		$storyform_settings = get_option( 'storyform_settings' );
+		$storyform_settings = $this->get_settings();
 
 		// Get application key so we can figure out which templates are supported for this site
-		if( $storyform_settings && isset( $storyform_settings['storyform_application_key'] ) ){
+		if( isset( $storyform_settings['storyform_application_key'] ) ){
 			$app_key = $storyform_settings['storyform_application_key'];    
 		} else {
 			$app_key = null;
@@ -104,13 +119,41 @@ class Storyform_Options {
 	}
 
 	/**
+	 * Updates the application key
+	 *
+	 */
+	function update_application_key( $appKey ){
+		$storyform_settings = $this->get_settings();
+		$storyform_settings['storyform_application_key'] = $appKey;
+		$update = update_option( 'storyform_settings', $storyform_settings );
+	}
+
+	/**
+	 * Updates whether the user has attempted to log-in and register the site with Storyform
+	 *
+	 */
+	function update_site_registered( $value ){
+		update_option( 'storyform_site_registered', $value );
+	}
+
+	/**
+	 * Gets whether the user has attempted to log-in and register the site with Storyform or null.
+	 *
+	 */
+	function get_site_registered(){
+		return get_option( 'storyform_site_registered' );
+	}
+
+
+
+	/**
 	 * Gets the navigation header width
 	 *
 	 */
 	function get_navigation_width(){
-		$storyform_settings = get_option( 'storyform_settings' );
+		$storyform_settings = $this->get_settings();
 
-		if( $storyform_settings && isset( $storyform_settings['storyform_navigation_width'] ) ){
+		if( isset( $storyform_settings['storyform_navigation_width'] ) ){
 			$width = $storyform_settings['storyform_navigation_width'];    
 		} 
 
@@ -126,10 +169,10 @@ class Storyform_Options {
 	 *
 	 */
 	function get_navigation_logo(){
-		$storyform_settings = get_option( 'storyform_settings' );
+		$storyform_settings = $this->get_settings();
 
 		$logo = '';
-		if( $storyform_settings && isset( $storyform_settings['storyform_navigation_logo'] ) ){
+		if( isset( $storyform_settings['storyform_navigation_logo'] ) ){
 			$logo = $storyform_settings['storyform_navigation_logo'];    
 		} 
 
@@ -141,7 +184,7 @@ class Storyform_Options {
 	 *
 	 */
 	function get_navigation_title(){
-		$storyform_settings = get_option( 'storyform_settings' );
+		$storyform_settings = $this->get_settings();
 		return isset( $storyform_settings['storyform_navigation_title'] ) && $storyform_settings['storyform_navigation_title'];
 	}
 
@@ -150,9 +193,9 @@ class Storyform_Options {
 	 *
 	 */
 	function get_navigation_links(){
-		$storyform_settings = get_option( 'storyform_settings' );
+		$storyform_settings = $this->get_settings();
 
-		if( $storyform_settings && isset( $storyform_settings['storyform_navigation_links'] ) ){
+		if( isset( $storyform_settings['storyform_navigation_links'] ) ){
 			$links = $storyform_settings['storyform_navigation_links'];    
 		} 
 
@@ -168,9 +211,9 @@ class Storyform_Options {
 	 *
 	 */
 	function get_navigation_side(){
-		$storyform_settings = get_option( 'storyform_settings' );
+		$storyform_settings = $this->get_settings();
 
-		if( $storyform_settings && isset( $storyform_settings['storyform_navigation_side'] ) ){
+		if( isset( $storyform_settings['storyform_navigation_side'] ) ){
 			$side = $storyform_settings['storyform_navigation_side'];    
 		} 
 
@@ -186,9 +229,9 @@ class Storyform_Options {
 	 *
 	 */
 	function get_navigation_controls(){
-		$storyform_settings = get_option( 'storyform_settings' );
+		$storyform_settings = $this->get_settings();
 
-		if( $storyform_settings && isset( $storyform_settings['storyform_navigation_controls'] ) ){
+		if( isset( $storyform_settings['storyform_navigation_controls'] ) ){
 			$controls = $storyform_settings['storyform_navigation_controls'];    
 		} 
 
@@ -204,9 +247,9 @@ class Storyform_Options {
 	 *
 	 */
 	function get_navigation_bg_color(){
-		$storyform_settings = get_option( 'storyform_settings' );
+		$storyform_settings = $this->get_settings();
 
-		if( $storyform_settings && isset( $storyform_settings['storyform_navigation_bg_color'] ) ){
+		if( isset( $storyform_settings['storyform_navigation_bg_color'] ) ){
 			$color = $storyform_settings['storyform_navigation_bg_color'];    
 		} 
 
@@ -222,9 +265,9 @@ class Storyform_Options {
 	 *
 	 */
 	function get_navigation_fg_color(){
-		$storyform_settings = get_option( 'storyform_settings' );
+		$storyform_settings = $this->get_settings();
 
-		if( $storyform_settings && isset( $storyform_settings['storyform_navigation_fg_color'] ) ){
+		if( isset( $storyform_settings['storyform_navigation_fg_color'] ) ){
 			$color = $storyform_settings['storyform_navigation_fg_color'];    
 		} 
 
@@ -240,9 +283,9 @@ class Storyform_Options {
 	 *
 	 */
 	function get_navigation_border_bottom_width(){
-		$storyform_settings = get_option( 'storyform_settings' );
+		$storyform_settings = $this->get_settings();
 
-		if( $storyform_settings && isset( $storyform_settings['storyform_navigation_border_bottom_width'] ) ){
+		if( isset( $storyform_settings['storyform_navigation_border_bottom_width'] ) ){
 			$val = $storyform_settings['storyform_navigation_border_bottom_width'];    
 		} 
 
@@ -258,14 +301,11 @@ class Storyform_Options {
 	 *
 	 */
 	function get_add_image_sizes(){
-		$storyform_settings = get_option( 'storyform_settings' );
+		$storyform_settings = $this->get_settings();
 
 		// If its not set we assume yes we should add image sizes. 
-		if( $storyform_settings ){
-			$value = ! isset( $storyform_settings['storyform_add_image_sizes'] ) || $storyform_settings['storyform_add_image_sizes'];    
-		} else {
-			$value = TRUE;
-		}
+		$value = ! isset( $storyform_settings['storyform_add_image_sizes'] ) || $storyform_settings['storyform_add_image_sizes'];    
+		
 		return $value;
 	}
 
@@ -345,10 +385,10 @@ class Storyform_Options {
 	}
 
 	function get_selected_scripts(){
-		$storyform_settings = get_option( 'storyform_settings' );
+		$storyform_settings = $this->get_settings();
 
 		$scripts = null;
-		if( $storyform_settings && isset( $storyform_settings['storyform_selected_scripts'] ) ){
+		if( isset( $storyform_settings['storyform_selected_scripts'] ) ){
 			$scripts = $storyform_settings['storyform_selected_scripts'];    
 		} 
 
@@ -372,10 +412,10 @@ class Storyform_Options {
 	}
 
 	function get_selected_functions(){
-		$storyform_settings = get_option( 'storyform_settings' );
+		$storyform_settings = $this->get_settings();
 
 		$functions = null;
-		if( $storyform_settings && isset( $storyform_settings['storyform_selected_functions'] ) ){
+		if( isset( $storyform_settings['storyform_selected_functions'] ) ){
 			$functions = $storyform_settings['storyform_selected_functions'];    
 		} 
 

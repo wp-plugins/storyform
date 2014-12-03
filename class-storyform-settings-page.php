@@ -13,6 +13,8 @@ class Storyform_Settings_Page
 	{
 		add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
 		add_action( 'admin_init', array( $this, 'page_init' ) );
+		add_action( 'wp_ajax_storyform_save_app_key', array( $this, 'storyform_save_app_key' ) );
+		add_action( 'wp_ajax_storyform_save_site_registered', array( $this, 'storyform_save_site_registered' ) );
 		if( ! function_exists( 'wpcom_vip_get_resized_attachment_url' ) ){
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		}
@@ -62,6 +64,9 @@ class Storyform_Settings_Page
 	        wp_enqueue_style( 'wp-color-picker' );
 	        wp_enqueue_script( 'wp-color-picker' );
 
+	        wp_register_script( 'storyform_widgets', Storyform_Api::get_instance()->get_static_hostname() . '/js/widgets.js' );
+	        wp_enqueue_script( 'storyform_widgets' );
+
 	        wp_register_script( 'storyform_navbar', Storyform_Api::get_instance()->get_static_version_directory() . '/js/navbar.js' );
 	        wp_enqueue_script( 'storyform_navbar' );
 
@@ -89,9 +94,9 @@ class Storyform_Settings_Page
 		);
 
 		add_settings_section(
-			'storyform_section_id', // ID
+			'storyform_section_login', // ID
 			'Application Settings', // Title
-			array( $this, 'print_section_info' ), // Callback
+			array( $this, 'print_section_login' ), // Callback
 			'storyform-setting-admin' // Page
 		);
 
@@ -154,9 +159,10 @@ class Storyform_Settings_Page
 	 */
 	public function sanitize( $input )
 	{
-		$new_input = array();
+		$new_input = Storyform_Options::get_instance()->get_settings();
+
 		if( isset( $input['storyform_application_key'] ) ) {
-			$new_input['storyform_application_key'] =  sanitize_text_field( $input['storyform_application_key'] );
+			$new_input['storyform_application_key'] = sanitize_text_field( $input['storyform_application_key'] );
 		}
 
 		if( isset( $input['storyform_navigation_width'] ) ) {
@@ -235,9 +241,69 @@ class Storyform_Settings_Page
 	/**
 	 * Print the Section text
 	 */
-	public function print_section_info()
+	public function print_section_login()
 	{
+		global $storyform_plugin_identifier;
+		global $wp_version;
+		$options = Storyform_Options::get_instance();
+		$ajax_nonce = wp_create_nonce( "storyform-appkey-save-nonce" );
+		$ajax_nonce_site_registered = wp_create_nonce( "storyform-site-registered-save-nonce" );
+
+		?>
+		<script>
+			(function(){
+				var appKey = '<?php echo $options->get_application_key() ?>';
+				var site = '<?php echo home_url() ?>';
+				StoryformWidgets.init({
+					environment: '<?php echo $storyform_plugin_identifier . " wordpress-" . $wp_version ?>',
+					hostname: '<?php echo Storyform_Api::get_instance()->get_hostname()?>'
+				}).then(function(){
+					var dashboard = StoryformWidgets.getControlForElement(document.querySelector('.storyform-settings-dashboard'));
+					dashboard.addSite(site);
+					jQuery.post(ajaxurl, { action : 'storyform_save_site_registered', _ajax_nonce: '<?php echo $ajax_nonce_site_registered; ?>' });
+					if(!appKey){
+						dashboard.getAppKey().then(function(appKey){
+							var data = {
+								'action': 'storyform_save_app_key',
+								'app_key': appKey,
+								'_ajax_nonce': '<?php echo $ajax_nonce; ?>'
+							};
+							jQuery.post(ajaxurl, data, function(response) {
+								// TODO: What if there was an error?
+							});
+						});
+					}
+				});
+
+			})()
+		</script>
+		<div class="storyform-settings-dashboard" data-control="Storyform.Dashboard"></div>
+		<?php
+
 	}
+
+	/**
+	 *  Admin ajax call which saves the application key
+	 *
+	 */
+	public function storyform_save_app_key() {
+		check_ajax_referer( 'storyform-appkey-save-nonce' );
+		$appKey =  sanitize_text_field( $_POST['app_key'] );
+		Storyform_Options::get_instance()->update_application_key( $appKey );
+		die(); 
+	}
+
+	/**
+	 *  Admin ajax call which saves whether the site is registered
+	 *
+	 */
+	public function storyform_save_site_registered() {
+		check_ajax_referer( 'storyform-site-registered-save-nonce' );
+		Storyform_Options::get_instance()->update_site_registered( '1' );
+		die(); 
+	}
+
+	
 
 	/**
 	 * Print the Section text
@@ -378,7 +444,7 @@ class Storyform_Settings_Page
 		$key = Storyform_Options::get_instance()->get_application_key();
 		printf(
 			'<input type="text" id="storyform_application_key" name="storyform_settings[storyform_application_key]" value="%s" /><br />
-			<label><small>Sign up at <a target="_blank	" href="http://storyform.co/#signup">Storyform</a></small></label>',
+			<label><small>Sign up at <a target="_blank	" href="//storyform.co/#signup">Storyform</a></small></label>',
 			$key ? esc_attr( $key ) : ''
 		);
 	}

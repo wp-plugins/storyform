@@ -41,14 +41,13 @@ class Storyform_Admin_Meta_Box {
 		$layout_type = $options->get_layout_type_for_post( $post_id );
 		$use_featured_image = $options->get_use_featured_image_for_post( $post_id ) ? 'checked' : '';
 		
-		$apiversiondir = Storyform_Api::get_instance()->get_version_directory();
+		$hostname = Storyform_Api::get_instance()->get_hostname();
 
 		wp_nonce_field( 'storyform_meta_box', 'storyform_meta_box_nonce' );
 
 		?>
 
-		<p>
-			
+		<div class="storyform-admin-meta-box">
 			<label for="storyform-templates"><?php esc_attr_e( 'Choose which Storyform templates to use for this post.', Storyform_Api::get_instance()->get_textdomain() ); ?></label>
 			<p id="storyform-status"></p>
 			<br />
@@ -83,11 +82,12 @@ class Storyform_Admin_Meta_Box {
 			<script>
 				var storyform = window.storyform || {};
 				storyform.template = '<?php if( $template && $template != 'pthemedefault' ) { echo $template; } ?>';
-				storyform.api_version_dir = '<?php echo $apiversiondir ?>';
+				storyform.hostname = '<?php echo $hostname ?>';
 				storyform.app_key = '<?php echo $app_key ?>';
+				storyform.settingsUrl = "<?php echo admin_url( 'options-general.php?page=storyform-setting-admin' ) ?>";
 			</script>
 
-		</p>
+		</div>
 
 	<?php }
 

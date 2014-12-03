@@ -26,26 +26,26 @@
 		
 		select.one("focus", function(){
 			jQuery.ajax({
-				url: storyform.api_version_dir + 'data/templategroups',
+				url: storyform.hostname + '/users/me/templates',
 				data: {
-					app_key: storyform.app_key,
+					appKey: storyform.app_key,
 				},
 				type: 'GET',
 				dataType : "json",
 				success: function(json){
 					loading.remove();
-					var templates = json;
+					var templates = json.templates;
 					templates.forEach(function(template){
 						if(template.id !== storyform.template){
 							var option = document.createElement('option');
 							option.value = template.id;
-							option.textContent = template.id;
+							option.textContent = template.name;
 							select.append(option);
 						}
 					});
 				},
 				error: function(){
-					document.getElementById('storyform-status').textContent = 'Cannot retrieve templates. Ensure Settings > Storyform Settings > Application key is set correctly.';
+					document.getElementById('storyform-status').innerHTML = 'Cannot retrieve templates. Please ensure you\'ve logged into the <a href="' + storyform.settingsUrl + '">Storyform Settings</a>.';
 				}
 			});
 		});

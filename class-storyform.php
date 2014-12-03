@@ -67,6 +67,8 @@ class Storyform {
 	}	
 
 	/*
+	 *
+	 *	@public Be sure to not remove this.
 	 *	Returns the template in use, or null.
 	 */
 	public static function template_in_use() {
@@ -278,10 +280,11 @@ class Storyform {
 				group: '<?php echo $this->get_storyform_template() ?>',
 				version: 'v<?php echo Storyform_Api::get_instance()->get_version() ?>',
 				host: '<?php echo Storyform_Api::get_instance()->get_hostname() ?>',
-				generator: '<?php echo $storyform_plugin_identifier ?>'
+				generator: '<?php echo $storyform_plugin_identifier ?>',
+				appKey: '<?php echo Storyform_Options::get_instance()->get_application_key() ?>'
 			};
 
-			/*-- START RENDER SCRIPT --*/!function(a){function b(a,b){var c=new XMLHttpRequest;c.onreadystatechange=function(){4===c.readyState&&(c.status>=200&&c.status<300?b(null,c):b(c),c.onreadystatechange=function(){})},c.open("GET",a.uri,!0),c.send()}document.documentElement.className+=" js";var c=void 0===_template.host?"http://storyform.co":_template.host,d=_template.version||"v0.4",e=_template.generator?"&generator="+_template.generator:"",f=c+"/"+d+"/render/"+a._template.group+"?uri="+encodeURIComponent(document.location.href)+"&lastModified="+encodeURIComponent(document.lastModified)+"&templateGroup="+encodeURIComponent(_template.group)+"&width="+window.innerWidth+"&height="+window.innerHeight+"&deviceWidth="+window.screen.width+"&deviceHeight="+window.screen.height+e;a.App={Data:{render:{callback:function(){},data:null,uri:f}}},b({uri:f},function(b,c){if(c){var d=a.App.Data.render.data=JSON.parse(c.responseText);a.App.Data.render.callback(null,d),a.App.Data.render.callback=function(){}}else a.App.Data.render.callback(b),a.App.Data.render.callback=function(){}})}(this);/*-- END RENDER SCRIPT --*/
+			/*-- START RENDER SCRIPT --*/!function(a){function b(a,b){var c=new XMLHttpRequest;c.onreadystatechange=function(){4===c.readyState&&(c.status>=200&&c.status<300?b(null,c):b(c),c.onreadystatechange=function(){})},c.open("GET",a.uri,!0),c.send()}document.documentElement.className+=" js";var c=void 0===_template.host?"//storyform.co":_template.host,d=_template.version||"v0.5",e=_template.generator?"&generator="+_template.generator:"",f=c+"/"+d+"/render/"+a._template.group+"?appKey="+encodeURIComponent(_template.appKey)+"&uri="+encodeURIComponent(document.location.href)+"&lastModified="+encodeURIComponent(document.lastModified)+"&templateGroup="+encodeURIComponent(_template.group)+"&width="+window.innerWidth+"&height="+window.innerHeight+"&deviceWidth="+window.screen.width+"&deviceHeight="+window.screen.height+e;a.App={Data:{render:{callback:function(){},data:null,uri:f}}},b({uri:f},function(b,c){if(c){var d=a.App.Data.render.data=JSON.parse(c.responseText);a.App.Data.render.callback(null,d),a.App.Data.render.callback=function(){}}else a.App.Data.render.callback(b),a.App.Data.render.callback=function(){}})}(this);/*-- END RENDER SCRIPT --*/
 		</script>
 		<?php
 	}

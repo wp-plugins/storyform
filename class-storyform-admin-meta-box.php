@@ -48,7 +48,7 @@ class Storyform_Admin_Meta_Box {
 		?>
 
 		<div class="storyform-admin-meta-box">
-			<label for="storyform-templates"><?php esc_attr_e( 'Choose which Storyform templates to use for this post.', Storyform_Api::get_instance()->get_textdomain() ); ?></label>
+			<label for="storyform-templates"><?php printf( __( 'Choose which Storyform templates to use for this post or <a href="%s" target="_blank">create/edit a template</a>.', Storyform_Api::get_instance()->get_textdomain() ), Storyform_Api::get_instance()->get_hostname() . '/user/templates' ); ?></label>
 			<p id="storyform-status"></p>
 			<br />
 			<select class="widefat storyform-form-item" name="storyform-templates" id="storyform-templates-select" >

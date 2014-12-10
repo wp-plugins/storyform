@@ -8,7 +8,7 @@ function storyform_add_buttons( $plugin_array ) {
 
     return $plugin_array;
 }
-add_filter( "mce_external_plugins", "storyform_add_buttons" );
+add_filter( "mce_external_plugins", "storyform_add_buttons", 1000 );
 
 /*
  * Add pullquote button

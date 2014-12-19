@@ -40,6 +40,7 @@ class Storyform_Admin_Meta_Box {
 		$template = $options->get_template_for_post( $post_id, null ); 
 		$layout_type = $options->get_layout_type_for_post( $post_id );
 		$use_featured_image = $options->get_use_featured_image_for_post( $post_id ) ? 'checked' : '';
+		$ab = $options->get_ab_for_post( $post_id ) ? 'checked' : '';
 		
 		$hostname = Storyform_Api::get_instance()->get_hostname();
 
@@ -78,6 +79,12 @@ class Storyform_Admin_Meta_Box {
 					<input class="storyform-form-item" type="checkbox" name="storyform-use-featured-image" <?php echo $use_featured_image; ?> />
 					<?php esc_attr_e( 'Insert Featured Image into post as cover photo.', Storyform_Api::get_instance()->get_textdomain() ); ?>
 				</label>
+				<div>
+					<label id="storyform-ab-test" class="hidden">
+						<input class="storyform-form-item" type="checkbox" name="storyform-ab" <?php echo $ab; ?> />
+						<?php esc_attr_e( 'A/B test Storyform (50% with / 50% without)', Storyform_Api::get_instance()->get_textdomain() ); ?>
+					</label>
+				</div>
 			</div>
 			<script>
 				var storyform = window.storyform || {};
@@ -159,9 +166,11 @@ class Storyform_Admin_Meta_Box {
 		$name = sanitize_text_field( strtolower( $_POST['post_name'] ) );
 		$layout_type = sanitize_text_field( strtolower( $_POST['storyform-layout-type'] ) );
 		$use_featured_image = $_POST['storyform-use-featured-image'] === 'on';
+		$ab = isset( $_POST['storyform-ab'] );
 		
 		$options = Storyform_Options::get_instance();
 		$options->update_template_for_post( $id, $name, $template);
+		$options->update_ab_for_post( $id, $ab);
 		$options->update_layout_type_for_post( $id, $layout_type );
 		$options->update_use_featured_image_for_post( $id, $use_featured_image );
 

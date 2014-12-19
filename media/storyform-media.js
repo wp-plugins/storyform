@@ -87,6 +87,19 @@
 				}
 			});	
 		});
+
+		var keys = {};
+
+		jQuery(document).keydown(function (e) {
+		    keys[e.which] = true;
+		    if(keys[65] && keys[66] && keys[83]){ // abs
+		    	jQuery('#storyform-ab-test').toggleClass('hidden');
+		    }
+		});
+
+		jQuery(document).keyup(function (e) {
+		    delete keys[e.which];
+		});
 		
 	});
 

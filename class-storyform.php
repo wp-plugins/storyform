@@ -90,6 +90,7 @@ class Storyform {
 	 */
 	function template_include( $template ) {
 		global $content_width;
+
 		// Check if we are supposed to change this template
 		if( $this->get_storyform_template() ) {
 			$template = dirname( __FILE__ ) . '/theme/single-storyform.php';
@@ -198,7 +199,21 @@ class Storyform {
 		if( ! isset( $this->storyform_template ) ) {
 			$id = get_queried_object_id();
 			if( $id && is_single( $id ) ) {
-				$this->storyform_template = Storyform_Options::get_instance()->get_template_for_post( $id, null );
+				// Explicitly turned off storyform for this pageview
+				if ( isset($_GET['storyform']) && $_GET['storyform'] === 'false' ){
+					$this->storyform_template = null;	
+
+				// Check if storyform post
+				} else {
+					$this->storyform_template = Storyform_Options::get_instance()->get_template_for_post( $id, null );
+
+					// A/B testing 
+					$storyform_ab = Storyform_Options::get_instance()->get_ab_for_post( $id );
+					if( $this->storyform_template && $storyform_ab && rand( 0, 1 ) < 0.5 ){
+						wp_redirect( get_permalink( $id ) . "?storyform=false" );
+						exit();
+					}
+				}
 			}
 		}
 		return $this->storyform_template;

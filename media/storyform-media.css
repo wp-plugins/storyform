@@ -64,6 +64,10 @@
 	content:"\f109";
 }
 
+#storyform-ab-test.hidden {
+	display: none;
+}
+
 .ui-tooltip {
 	padding: 5px;
 	position: absolute;

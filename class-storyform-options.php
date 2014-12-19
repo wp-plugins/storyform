@@ -8,6 +8,7 @@ class Storyform_Options {
 
 	private $option_name = 'storyform_templates';
 	private $meta_name = 'storyform_template';
+	private $ab_name = 'storyform_ab';
 	private $featured_image_name = 'storyform_use_featured_image';
 	private $layout_type_name = 'storyform_layout_type';
 
@@ -41,6 +42,22 @@ class Storyform_Options {
 	 */
 	function get_template_for_post( $post_id, $post_name ) {
 		return get_post_meta( $post_id, $this->meta_name, true );
+	}
+
+	/**
+	 * Gets whether template should be Storyform A/B tested
+	 *
+	 */
+	function get_ab_for_post( $post_id ) {
+		return get_post_meta( $post_id, $this->ab_name, true );
+	}
+
+	/**
+	 * Sets whether to A/B test Storyform
+	 *
+	 */
+	function update_ab_for_post( $post_id, $value ) {
+		update_post_meta( $post_id, $this->ab_name, $value );
 	}
 
 	protected function get_templates_options() {

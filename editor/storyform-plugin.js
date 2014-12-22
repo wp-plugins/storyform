@@ -479,12 +479,12 @@
                 this._layoutType = 'slideshow';
             } else if(dom.hasClass(editor.getBody(), 'ordered')) {
                 this._layoutType = 'ordered'
-            } else {
+            } else if(dom.hasClass(editor.getBody(), 'freeflow')) {
                 this._layoutType = 'freeflow';    
             }
         },
 
-        _layoutType: 'freeflow',
+        _layoutType: '',
 
         setLayoutType: function(type){
             var dom = this.editor.dom;

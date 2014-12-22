@@ -5,7 +5,7 @@ Contributors: RylanH
 Donate link: https://storyform.co
 Tags: storyform, narrative, magazine, longform, photography, slider
 Requires at least: 2.6.1
-Tested up to: 4.0.0
+Tested up to: 4.1.0
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-0.3.html
@@ -81,6 +81,14 @@ Storyform is still a bit fragile. We are working out the kinks. Start by going t
 
 == Changelog ==
 
+= 0.5.1 =
+
+* Fixed issues of pinned icons and extra data- attributes on non-Storyform posts
+* WordPress 4.1 support
+* Added link to Storyform template editor
+* Fix to refresh settings on login and logout of Storyform
+* Smart caption fixes 
+
 = 0.5.0 =
 
 * Now supporting v0.5 of Storyform
@@ -109,6 +117,14 @@ Storyform is still a bit fragile. We are working out the kinks. Start by going t
 * Removal of fallback to old theme when on an unsupported browser.
 
 == Upgrade Notice ==
+
+= 0.5.1 =
+
+* Fixed issues of pinned icons and extra data- attributes on non-Storyform posts
+* WordPress 4.1 support
+* Added link to Storyform template editor
+* Fix to refresh settings on login and logout of Storyform
+* Smart caption fixes
 
 = 0.5.0 =
 

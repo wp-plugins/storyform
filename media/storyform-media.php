@@ -116,7 +116,7 @@ add_filter( 'attachment_fields_to_save', 'storyform_attachment_field_credit_save
 
 /**
  *
- * Reads a single item from the list of items coming out of the DB and converts it into a named strucure
+ * Reads a single text overlay item from the list of items coming out of the DB and converts it into a named strucure
  *
  */
 function storyform_read_single_overlay ( $overlay ) {
@@ -126,12 +126,29 @@ function storyform_read_single_overlay ( $overlay ) {
 
 /**
  *
- *  Adds data(-)sources attributes to media when inserted into editor from Media library which 
- *  enables responsive images to choose the best image to load on the client.
+ *  Adds data attributes when inserted into editor from Media library only on Storyform posts.
  *
  */
 if( ! function_exists( 'storyform_media_send_to_editor' )) :
 function storyform_media_send_to_editor( $html, $attachment_id, $attachment ) {
+	$post_id = intval( $_POST['post_id'] );
+	if( Storyform_Options::get_instance()->get_template_for_post( $post_id, null ) ){
+		return _storyform_add_data_attributes( $html, $attachment_id, $post_id );
+	}
+
+	return $html;
+}
+endif;
+add_filter( 'media_send_to_editor', 'storyform_media_send_to_editor', 30, 3 );
+
+/**
+ *  Adds data(-)sources, data-text-overlay, data-decorational attributes to image/video attachment html,
+ *  which enables responsive images to choose the best image to load on the client, caption overlays and 
+ *	layout control.
+ *
+ */
+if( ! function_exists( '_storyform_add_data_attributes' )) :
+function _storyform_add_data_attributes( $html, $attachment_id, $post_id ) {
 	$post = get_post( $attachment_id );
 	if ( substr($post->post_mime_type, 0, 5) == 'image' || substr($post->post_mime_type, 0, 5) == 'video' ) {
 
@@ -140,8 +157,6 @@ function storyform_media_send_to_editor( $html, $attachment_id, $attachment ) {
 
 		$textOverlay = get_post_meta( $attachment_id, 'storyform_text_overlay_areas', true );
 		$textOverlay = $textOverlay ? 'data-text-overlay="' . esc_attr( $textOverlay ). '"' : '';
-
-		$post_id = intval( $_POST['post_id'] );
 
 		$layout_type = Storyform_Options::get_instance()->get_layout_type_for_post( $post_id );
 		$decorational = ( $layout_type === 'freeflow' ) ? 'article' : 'pinned';
@@ -154,8 +169,6 @@ function storyform_media_send_to_editor( $html, $attachment_id, $attachment ) {
 	return $html;
 }
 endif;
-add_filter( 'media_send_to_editor', 'storyform_media_send_to_editor', 30, 3 );
-
 
 /**
  *	Allow data-text-overlay, data-decorational, data-source attributes that would otherwise get stripped in VIP.
@@ -287,7 +300,7 @@ endif;
 
 
 /*
- * Generate differen image sizes because we often display at full screen or full bleed sizes
+ * Generate different image sizes because we often display at full screen or full bleed sizes
  * 
  */
 if ( ! function_exists( 'storyform_media_setup' ) ) :
@@ -302,7 +315,7 @@ endif; // storyform_setup
 add_action( 'after_setup_theme', 'storyform_media_setup' );
 
 /*
- * Setups up content filters.
+ * Setups up content filters that run before post becomes visible.
  * Running at wp action since that is when we will be sure we have a queried post id to know what template were using.
  * 
  */
@@ -511,8 +524,8 @@ function storyform_parse_data_sources( $str ){
 endif; // storyform_parse_data_sources
 
 /**
- *	Removes the controls attribute by default on Storyform posts. Only if the user specifies it in the shortcode.
- *  Otherwise it will get deferred to the presentational layer (templates).
+ *	Removes the [video] shortcode controls attribute by default on Storyform posts. Only if the user 
+ *  specifies it in the shortcode. Otherwise it will get deferred to the presentational layer (Storyform layouts).
  *
  */
 if( ! function_exists( 'storyform_video_shortcode' ) ) :
@@ -542,7 +555,7 @@ function storyform_video_shortcode( $output, $atts ){
 endif;
 
 /**
- *	Adds controls, nocontrols, noloop, autopause attributes on shortcode.
+ *	Adds controls, nocontrols, noloop, autopause attributes on [video] shortcode.
  *
  */
 if( ! function_exists( 'storyform_shortcode_atts_video' ) ) :
@@ -631,5 +644,49 @@ function _storyform_remove_src_attribute( $srcMatches ) {
 
 }
 endif;
+
+
+class Storyform_Media {
+	private $post_id = null;
+
+	/**
+	 *	Adds data-sources, data-decorational, data-text-overlay.
+	 *
+	 *	@return The post data
+	 */
+	public function add_data_attributes( $post_id , $content ){
+		$this->post_id = $post_id;
+		return preg_replace_callback( '/(?:\<img|\[video)([^>]+?)>/i', array( $this, '_add_data_attributes' ), $content );
+	}
+
+	public function _add_data_attributes( $matches ) {
+		$html = $matches[0];
+		$attributes = $matches[1];
+		if( strpos( $attributes, 'data-sources' ) === FALSE ){
+			// Get the attachment id
+			if( preg_match( '/wp-image-(\d+)/', $attributes, $matches ) ){
+				$attachment_id = intval( $matches[1] );
+				$html = _storyform_add_data_attributes( $html, $attachment_id, $this->post_id );
+			}
+		}
+		return $html;
+	}
+
+	/**
+	 *	Removes data-sources, data-decorational, data-text-overlay.
+	 *
+	 *	@return The post data
+	 */
+	public function remove_data_attributes( $post_id , $content ){
+		$patterns = array(
+			'# data-sources=\\\(?:\'|")([^\'">]+)\\\(?:\'|")#',
+			'# data-text-overlay=\\\(?:\'|")([^\'">]+)\\\(?:\'|")#',
+			'# data-decorational=\\\(?:\'|")([^\'">]+)\\\(?:\'|")#'
+		);
+		return preg_replace($patterns, '', $content );
+	}
+
+	
+}
 
 ?>

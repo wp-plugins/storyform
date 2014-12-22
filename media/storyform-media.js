@@ -60,19 +60,11 @@
 			} else {
 				postOptions.show();
 			}
+			setLayoutType();
 		});
 		
 		jQuery('.storyform-layout-type').change(function(){
-			var val = jQuery(this).val();
-			if(tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()){
-				tinyMCE.activeEditor.plugins.storyform.setLayoutType(val);	
-			} else {
-				var textarea = jQuery('#' + wpActiveEditor);
-				var text = textarea.val();
-				var decorational = val === 'freeflow' ? 'article' : 'pinned';
-				textarea.val(text.replace(/\sdata\-decorational(?:=[\'\"]([^\'\"]*)[\'\"])?/ig, ' data-decorational="' + decorational + '"'));
-			}
-			
+			setLayoutType();
 		});
 
 		jQuery('[data-storyform-tooltip]').map(function(index, el){
@@ -102,6 +94,18 @@
 		});
 		
 	});
+
+	function setLayoutType(){
+		var val = jQuery('.storyform-layout-type').val();
+		if(tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()){
+			tinyMCE.activeEditor.plugins.storyform.setLayoutType(val);	
+		} else {
+			var textarea = jQuery('#' + wpActiveEditor);
+			var text = textarea.val();
+			var decorational = val === 'freeflow' ? 'article' : 'pinned';
+			textarea.val(text.replace(/\sdata\-decorational(?:=[\'\"]([^\'\"]*)[\'\"])?/ig, ' data-decorational="' + decorational + '"'));
+		}
+	}
 
 	/**
 	 *	Initializes the attachment fields (shown on the edit media and media uploader pages) to setup events and display captions

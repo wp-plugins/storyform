@@ -7,7 +7,7 @@
 class Storyform_Admin_Meta_Box {
 
 	public static function init() {
-		add_action( 'save_post', array( __CLASS__, 'save_meta_box_data' ));
+		add_action( 'save_post', array( __CLASS__, 'save_meta_box_data' ) );
 		add_action( 'load-post.php', array( __CLASS__, 'post_meta_boxes_setup' ) );
 		add_action( 'load-post-new.php', array( __CLASS__, 'post_meta_boxes_setup' ) );
 	}
@@ -112,6 +112,8 @@ class Storyform_Admin_Meta_Box {
 	 * @param int $post_id The ID of the post being saved.
 	 */
 	public static function save_meta_box_data( $post_id ) {
+		global $_POST;
+		global $storyform_media;
 
 		/*
 		 * We need to verify this came from our screen and with proper authorization,
@@ -174,7 +176,14 @@ class Storyform_Admin_Meta_Box {
 		$options->update_layout_type_for_post( $id, $layout_type );
 		$options->update_use_featured_image_for_post( $id, $use_featured_image );
 
+		// Avoid infinite loop by removing save_post hook temporarily
+		remove_action( 'save_post', array( __CLASS__, 'save_meta_box_data' ) );
+		if( $template ) {
+			$content = $storyform_media->add_data_attributes( $id, $_POST['content'] );
+		} else {
+			$content = $storyform_media->remove_data_attributes( $id, $_POST['content'] );
+		}
+		wp_update_post( array( 'ID' => $id, 'post_content' => $content ) );
+		add_action( 'save_post', array( __CLASS__, 'save_meta_box_data' ) );
 	}
-
-
 }

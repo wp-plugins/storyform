@@ -46,6 +46,10 @@ class Storyform_Api {
         return $this->get_static_hostname() . '/v' . $this->version . ( defined( 'STORYFORM_LOCALHOST' ) && STORYFORM_LOCALHOST ? '/js/wp-localhost.js' : '/js/read.js' );
     }
 
+    function get_scroll_analytics_js(){
+        return $this->get_static_hostname() . '/v' . $this->version . ( defined( 'STORYFORM_LOCALHOST' ) && STORYFORM_LOCALHOST ? '/js/scroll-analytics-localhost.js' : '/js/scroll-analytics.js' );    
+    }
+
     function get_static_version_directory(){
         return $this->get_static_hostname() . '/v' . $this->version;
     }

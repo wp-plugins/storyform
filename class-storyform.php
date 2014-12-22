@@ -105,6 +105,10 @@ class Storyform {
 
 
 			$content_width = 1024;
+
+		// Check if this is a non-Storyform side of a/b tested Storyform article
+		} else if( $this->is_sometimes_storyform() ) {
+			add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_non_storyform' ) );
 		}
 
 		return $template;
@@ -219,6 +223,22 @@ class Storyform {
 		return $this->storyform_template;
 	}
 
+	/**
+	 *	Inrespective of whether this is a/b tested or storyform=false, returns if the current post is a Storyform post.
+	 *
+	 */
+	public function is_sometimes_storyform(){
+		if( $this->get_storyform_template() ){
+			return TRUE;
+		}
+
+		$id = get_queried_object_id();
+		if( $id && is_single( $id ) ) {
+			return !!Storyform_Options::get_instance()->get_template_for_post( $id, null );
+		}
+		return FALSE;
+	}
+
 	/*
 	 *	De/enqueue the JS/CSS files needed and not needed.
 	 */
@@ -282,6 +302,11 @@ class Storyform {
 		wp_enqueue_script( 'storyform_js', $instance->get_js(), array(), false, false );
 		wp_enqueue_style( 'storyform_css', $instance->get_css(), array(), false, false );
 
+	}
+
+	function enqueue_non_storyform() {
+		$instance = Storyform_Api::get_instance();
+		wp_enqueue_script( 'storyform_scroll_analytics', $instance->get_scroll_analytics_js(), array(), false, false );
 	}
 
 	/*

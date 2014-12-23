@@ -211,12 +211,15 @@ class Storyform {
 				} else {
 					$this->storyform_template = Storyform_Options::get_instance()->get_template_for_post( $id, null );
 
-					// A/B testing 
-					$storyform_ab = Storyform_Options::get_instance()->get_ab_for_post( $id );
-					if( $this->storyform_template && $storyform_ab && rand( 0, 1 ) < 0.5 ){
-						wp_redirect( get_permalink( $id ) . "?storyform=false" );
-						exit();
+					if( !isset($_GET['storyform']) || $_GET['storyform'] !== 'true' ) {
+						// A/B testing 
+						$storyform_ab = Storyform_Options::get_instance()->get_ab_for_post( $id );
+						if( $this->storyform_template && $storyform_ab && rand( 0, 1 ) < 0.5 ){
+							wp_redirect( get_permalink( $id ) . "?storyform=false" );
+							exit();
+						}	
 					}
+					
 				}
 			}
 		}

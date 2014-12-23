@@ -25,6 +25,7 @@
 	<title><?php wp_title( '/', true, 'right' ); ?></title>
 	<link rel="profile" href="http://gmpg.org/xfn/11">
 	<link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>">
+	<link rel="canonical" href="<?php echo get_permalink() ?>" />
 	<meta name="generator" content="Storyform <?php echo Storyform_Api::get_instance()->get_version() ?>" />
 	<?php wp_head(); ?>
 </head>

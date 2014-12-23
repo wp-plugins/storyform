@@ -75,7 +75,9 @@
             editor.on("wpview-selected", function(view){
                 var attr = view.getAttribute('data-wpview-type');
                 if(attr === 'video' || attr === 'embed' || attr === 'embedURL'){
-                    that.addVideoToolbar( view );
+                    if(that._layoutType){
+                        that.addVideoToolbar( view );
+                    }
                 }
             });
 
@@ -116,8 +118,10 @@
                 } else if ( node.nodeName === 'IMG' 
                     && ! that.isPlaceholder( node ) 
                 ) {
-                    // Clicked on image, not on icon
-                    that.addImageToolbar( node );
+                    if(that._layoutType){
+                        // Clicked on image, not on icon
+                        that.addImageToolbar( node );    
+                    }
 
                 } else if ( node.nodeName === 'DIV' && videoParent ) {
 

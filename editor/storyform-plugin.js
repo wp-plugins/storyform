@@ -202,7 +202,7 @@
 
                 // Sync data-decorational to parent since we can't use :before on img, video elements
                 if(img.getAttribute('data-decorational') !== img.parentNode.getAttribute('data-decorational')) {
-                    img.parentNode.setAttribute('data-decorational', img.getAttribute('data-decorational'));
+                    that._setParentToDecorational(img, img.getAttribute('data-decorational'));
                 }
 
 
@@ -265,6 +265,44 @@
                 return true;
             } 
             return false;
+        },
+
+        _setParentToDecorational: function(node, value){
+            while(node.parentNode.nodeName !== 'BODY'){
+                var parent = node.parentNode;
+                parent.setAttribute('data-decorational', value);
+                node = parent;
+            }
+            
+            /* Ensure node is the only child (a element with two img elements can't show pin overlay correctly)
+            if(parent.children.length > 1){
+                var before, after;
+                for(var i = 0; i < parent.childNodes.length; ){
+                    var child = parent.childNodes[i];
+                    if(child === node){
+                        break;
+                    }
+                    if(!before){
+                        before = parent.cloneNode();
+                        parent.parentNode.insertBefore(before, parent);
+                    }
+                    before.appendChild(child);
+                }
+                i++;
+                for(; i < parent.childNodes.length;){
+                    var child = parent.childNodes[i];
+                    if(!after){
+                        after = parent.cloneNode();
+                        if(parent.nextSibling){
+                            parent.parentNode.insertBefore(after, parent.nextSibling);    
+                        } else {
+                            parent.parentNode.appendChild(after, parent);
+                        }
+                    }
+                    after.appendChild(child);
+                }
+            }*/
+            
         },
 
         _isElementDecorational: function(node){
@@ -335,11 +373,11 @@
             if(this._isElementDecorational(node)) {
                 dom.addClass( iconNode, 'active');
                 node.setAttribute('data-decorational', 'pinned');
-                node.parentNode.setAttribute('data-decorational', 'pinned');
+                this._setParentToDecorational(node, 'pinned');
             } else {
                 dom.removeClass( iconNode, 'active');
                 node.setAttribute('data-decorational', 'article');
-                node.parentNode.setAttribute('data-decorational', 'article');
+                this._setParentToDecorational(node, 'article');
             }
 
             this.editor.nodeChanged();
@@ -571,7 +609,7 @@
             var nodes = dom.select( 'img:not([data-mce-bogus]), figure:not([data-mce-bogus]), picture:not([data-mce-bogus]), video:not([data-mce-bogus])' );
             nodes.forEach(function(node){
                 dom.setAttrib(node, 'data-decorational', 'pinned');
-                dom.setAttrib(node.parentNode, 'data-decorational', 'pinned');
+                that._setParentToDecorational(node, 'pinned');
             });
 
             var nodes = dom.select( '[data-wpview-type="video"], [data-wpview-type="embed"], [data-wpview-type="embedURL"]');
@@ -589,7 +627,7 @@
             var nodes = dom.select( 'img:not([data-mce-bogus]), figure:not([data-mce-bogus]), picture:not([data-mce-bogus]), video:not([data-mce-bogus])' );
             nodes.forEach(function(node){
                 dom.setAttrib(node, 'data-decorational', 'article');
-                dom.setAttrib(node.parentNode, 'data-decorational', 'article');
+                that._setParentToDecorational(node, 'article');
             });
 
             var nodes = dom.select( '[data-wpview-type="video"], [data-wpview-type="embed"], [data-wpview-type="embedURL"]');

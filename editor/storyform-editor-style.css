@@ -12,6 +12,7 @@
 
 [data-decorational="article"] {
 	position: relative;
+	display: block;
 }
 
 [data-decorational="article"]:before{

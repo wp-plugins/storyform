@@ -133,7 +133,6 @@ class Storyform_Settings_Page
 			);
 		}
 
-
 		add_settings_field(
 			'storyform_selected_scripts', // ID
 			'Include these scripts on Storyform posts (removes all others)', // Title
@@ -146,6 +145,14 @@ class Storyform_Settings_Page
 			'storyform_selected_functions', // ID
 			'Allow these plugin/theme functions to run on Storyform posts (prevents all others)', // Title
 			array( $this, 'storyform_selected_functions_callback' ), // Callback
+			'storyform-setting-admin', // Page
+			'storyform_advanced_section_id' // Section
+		);
+
+		add_settings_field(
+			'storyform_selected_functions', // ID
+			'Manually insert scripts', // Title
+			array( $this, 'storyform_manual_insert_callback' ), // Callback
 			'storyform-setting-admin', // Page
 			'storyform_advanced_section_id' // Section
 		);
@@ -565,6 +572,11 @@ class Storyform_Settings_Page
 				$description 
 			);
 		}
+	}
+
+	public function storyform_manual_insert_callback()
+	{
+		?><span>To manually insert scripts, follow these <a href="https://storyform.co/docs/wordpress#toc5">instructions</a>.</span><?php
 	}
 
 	protected function get_plugin_dir_for_function_name( $id ){

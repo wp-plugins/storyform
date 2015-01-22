@@ -81,6 +81,10 @@ Storyform is still a bit fragile. We are working out the kinks. Start by going t
 
 == Changelog ==
 
+= 0.5.2 =
+
+* Some bug fixes
+
 = 0.5.1 =
 
 * Fixed issues of pinned icons and extra data- attributes on non-Storyform posts
@@ -117,6 +121,10 @@ Storyform is still a bit fragile. We are working out the kinks. Start by going t
 * Removal of fallback to old theme when on an unsupported browser.
 
 == Upgrade Notice ==
+
+= 0.5.2 =
+
+* Some bug fixes
 
 = 0.5.1 =
 

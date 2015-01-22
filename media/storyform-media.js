@@ -96,7 +96,7 @@
 	});
 
 	function setLayoutType(){
-		var val = jQuery('.storyform-layout-type').val();
+		var val = jQuery('#post')[0]['storyform-layout-type'].value;
 		if(tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()){
 			tinyMCE.activeEditor.plugins.storyform.setLayoutType(val);	
 		} else {

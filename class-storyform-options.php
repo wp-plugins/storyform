@@ -11,6 +11,7 @@ class Storyform_Options {
 	private $ab_name = 'storyform_ab';
 	private $featured_image_name = 'storyform_use_featured_image';
 	private $layout_type_name = 'storyform_layout_type';
+	private $post_meta_settings = 'storyform_settings';
 
 	protected static $instance = false;
 
@@ -120,6 +121,21 @@ class Storyform_Options {
 	}
 
 	/**
+	 * Get specific post setting overrides for post.
+	 *
+	 */
+	public function get_settings_for_post( $post_id ){
+		$settings = $this->get_settings();
+		$meta = get_post_meta( $post_id, $this->post_meta_settings, true );
+		if( $meta ){
+			foreach( $meta as $key => $value ){
+				$settings[$key] = $value;
+			}
+		}
+		return $settings;
+	}
+
+	/**
 	 * Gets the application key or returns null.
 	 *
 	 */
@@ -168,14 +184,14 @@ class Storyform_Options {
 	 *
 	 */
 	function get_navigation_width(){
-		$storyform_settings = $this->get_settings();
+		$storyform_settings = $this->get_settings_for_post( get_the_ID() );
 
 		if( isset( $storyform_settings['storyform_navigation_width'] ) ){
 			$width = $storyform_settings['storyform_navigation_width'];    
 		} 
 
 		if( !isset( $width ) || !$width ){
-			$width = 'minimized';
+			$width = 'full';
 		}
 
 		return $width;
@@ -186,7 +202,7 @@ class Storyform_Options {
 	 *
 	 */
 	function get_navigation_logo(){
-		$storyform_settings = $this->get_settings();
+		$storyform_settings = $this->get_settings_for_post( get_the_ID() );
 
 		$logo = '';
 		if( isset( $storyform_settings['storyform_navigation_logo'] ) ){
@@ -201,7 +217,7 @@ class Storyform_Options {
 	 *
 	 */
 	function get_navigation_title(){
-		$storyform_settings = $this->get_settings();
+		$storyform_settings = $this->get_settings_for_post( get_the_ID() );
 		return isset( $storyform_settings['storyform_navigation_title'] ) && $storyform_settings['storyform_navigation_title'];
 	}
 
@@ -210,7 +226,7 @@ class Storyform_Options {
 	 *
 	 */
 	function get_navigation_links(){
-		$storyform_settings = $this->get_settings();
+		$storyform_settings = $this->get_settings_for_post( get_the_ID() );
 
 		if( isset( $storyform_settings['storyform_navigation_links'] ) ){
 			$links = $storyform_settings['storyform_navigation_links'];    
@@ -228,7 +244,7 @@ class Storyform_Options {
 	 *
 	 */
 	function get_navigation_side(){
-		$storyform_settings = $this->get_settings();
+		$storyform_settings = $this->get_settings_for_post( get_the_ID() );
 
 		if( isset( $storyform_settings['storyform_navigation_side'] ) ){
 			$side = $storyform_settings['storyform_navigation_side'];    
@@ -246,7 +262,7 @@ class Storyform_Options {
 	 *
 	 */
 	function get_navigation_controls(){
-		$storyform_settings = $this->get_settings();
+		$storyform_settings = $this->get_settings_for_post( get_the_ID() );
 
 		if( isset( $storyform_settings['storyform_navigation_controls'] ) ){
 			$controls = $storyform_settings['storyform_navigation_controls'];    
@@ -264,7 +280,7 @@ class Storyform_Options {
 	 *
 	 */
 	function get_navigation_bg_color(){
-		$storyform_settings = $this->get_settings();
+		$storyform_settings = $this->get_settings_for_post( get_the_ID() );
 
 		if( isset( $storyform_settings['storyform_navigation_bg_color'] ) ){
 			$color = $storyform_settings['storyform_navigation_bg_color'];    
@@ -282,7 +298,7 @@ class Storyform_Options {
 	 *
 	 */
 	function get_navigation_fg_color(){
-		$storyform_settings = $this->get_settings();
+		$storyform_settings = $this->get_settings_for_post( get_the_ID() );
 
 		if( isset( $storyform_settings['storyform_navigation_fg_color'] ) ){
 			$color = $storyform_settings['storyform_navigation_fg_color'];    
@@ -300,7 +316,7 @@ class Storyform_Options {
 	 *
 	 */
 	function get_navigation_border_bottom_width(){
-		$storyform_settings = $this->get_settings();
+		$storyform_settings = $this->get_settings_for_post( get_the_ID() );
 
 		if( isset( $storyform_settings['storyform_navigation_border_bottom_width'] ) ){
 			$val = $storyform_settings['storyform_navigation_border_bottom_width'];    

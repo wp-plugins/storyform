@@ -81,6 +81,10 @@ Storyform is still a bit fragile. We are working out the kinks. Start by going t
 
 == Changelog ==
 
+= 0.5.3 =
+
+* Comments, now supported. Works with standard WordPress comments or DISQUS.
+
 = 0.5.2 =
 
 * Some bug fixes
@@ -121,6 +125,10 @@ Storyform is still a bit fragile. We are working out the kinks. Start by going t
 * Removal of fallback to old theme when on an unsupported browser.
 
 == Upgrade Notice ==
+
+= 0.5.3 =
+
+* Comments, now supported. Works with standard WordPress comments or DISQUS.
 
 = 0.5.2 =
 

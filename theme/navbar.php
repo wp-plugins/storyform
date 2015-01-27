@@ -30,15 +30,20 @@ $navbar_class .= $logo == '' ? ' navbar-no-logo' : '';
 	border-left: 1px solid <?php echo $bg_color_light ? 'rgba(0,0,0,0.05)' : 'rgba(242,242,242,0.5)';?>;
 }
 
-.navbar-icon,
-.navbar-icon:active,
-.navbar-icon:visited{
+.navbar-controls .navbar-icon,
+.navbar-controls .navbar-icon:active,
+.navbar-controls .navbar-icon:visited,
+.navbar-comments-mobile {
 	color: <?php echo $fg_color ?>;
-	border-left: 1px solid <?php echo $bg_color_light ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';?>;
+}
+
+.comments-icon:hover {
+	color: <?php echo $fg_color ?>;
+	background-color: <?php echo $bg_color_light ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)';?>;
 }
 
 .navbar-minimized.vertical-links .navbar-controls {
-	border-top: 1px solid <?php echo $bg_color_light ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';?>;
+	background-color: <?php echo $bg_color_light ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';?>;
 }
 
 .fullscreen-icon,
@@ -47,7 +52,7 @@ $navbar_class .= $logo == '' ? ' navbar-no-logo' : '';
 	color: <?php echo $fg_color ?>;	
 }
 
-.fullscreen-icon:hover {
+.fullscreen-icon:hover, .comments-icon:hover {
 	color: <?php echo $fg_color ?>;	
 	background-color: <?php echo $bg_color_light ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.3)';?>;
 }
@@ -55,7 +60,15 @@ $navbar_class .= $logo == '' ? ' navbar-no-logo' : '';
 .navbar-controls {
 	background-color: <?php echo $bg_color ?>;
 }
-
+@media screen and (max-width: 700px) {
+	.navbar-controls {
+		background-color: <?php echo $bg_color_light ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';?>;
+	}
+	
+	.navbar-full.vertical-links .navbar-controls {
+		background-color: <?php echo $bg_color ?>;
+	}
+}
 .navbar-lines, .navbar-lines:before, .navbar-lines:after {
 	background: <?php echo $fg_color ?>;
 }
@@ -79,7 +92,7 @@ $navbar_class .= $logo == '' ? ' navbar-no-logo' : '';
 	background-color: <?php echo $bg_color ?>;
 }
 
-.vertical-links .navbar-nav {
+.navbar-full.vertical-links .navbar-nav {
 	top: <?php echo 50 + $bb_width ?>px;
 }
 
@@ -99,6 +112,7 @@ $navbar_class .= $logo == '' ? ' navbar-no-logo' : '';
           <span class="navbar-lines"></span>
         </div>
 	</div>
+	
 	<div class="navbar-content">
 		<a class="navbar-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home">
 			<h2 class="navbar-site-title"><?php bloginfo( 'name' ); ?></h2>
@@ -109,12 +123,23 @@ $navbar_class .= $logo == '' ? ' navbar-no-logo' : '';
 			<h6><a href="#"><?php echo $title; ?></a></h6>
 		</div>
 	<?php } ?>
+		
 	<?php if( count( $controls ) ) { ?>
+		
+		<div class="navbar-controls-mobile"> 
+			<?php if( ( is_single() && ( comments_open() || get_comments_number() ) ) || ( is_admin() && isset( $_GET['page'] ) && $_GET['page'] == 'storyform-setting-admin' ) ) { ?>
+			<a class="navbar-icon navbar-comments-mobile" data-win-control="UI.CommentsButton" href="#">
+				<span class="navbar-comments-number"><?php echo comments_number('', '1', '%') ?></span>
+			</a>
+			<?php } ?>
+		</div>
+	
 		<div class="navbar-controls">
 			<?php 
 			if( in_array( 'facebook', $controls ) ) { ?><a class="navbar-icon" data-win-control="UI.FacebookShare" href="#"></a><?php } 
 			if( in_array( 'twitter', $controls ) ) { ?><a class="navbar-icon" data-win-control="UI.TwitterShare" href="#"></a><?php } 
 			if( in_array( 'gplus', $controls ) ) { ?><a class="navbar-icon" data-win-control="UI.GooglePlusShare" href="#"></a><?php } 
+			if( ( is_single() && ( comments_open() || get_comments_number() ) ) || ( is_admin() && isset( $_GET['page'] ) && $_GET['page'] == 'storyform-setting-admin' ) ) { ?><a class="navbar-icon navbar-comments-btn" data-win-control="UI.CommentsButton" href="#"><span class="navbar-comments-number"><?php echo comments_number( '', '1', '%' ) ?></span></a><?php } 
 			if( in_array( 'fullscreen', $controls ) ) { ?><a class="navbar-icon" data-win-control="UI.FullScreenButton" href="#"></a><?php } 
 			?>
 		</div>
@@ -129,5 +154,13 @@ $navbar_class .= $logo == '' ? ' navbar-no-logo' : '';
 			) ) ?>
 		</nav>
 	</div>
+	<?php if ( is_single() && ( comments_open() || get_comments_number() ) ) : ?>
+		<div class="navbar-comments">
+			<div class="navbar-comments-close"></div>
+			<div class="navbar-comments-contents">
+				<?php comments_template( ); ?>
+			</div>
+		</div>
+	<?php endif; ?>
 </header>
 <div class="navbar-overlay"></div>

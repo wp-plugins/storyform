@@ -81,7 +81,22 @@ class Storyform {
 	 */
 	public function init(){
 		add_filter( 'template_include', array( &$this, 'template_include' ), 9999 );
+		add_filter( 'comments_template', array( &$this, 'comments_template' ), 5 );
+			
 	}
+
+	/** 
+	 * Loads our comments template. We must hook here since calling the function with file is always relative to 
+	 * the theme.
+	 *
+	 */
+	function comments_template( $file ) {
+		if( $this->get_storyform_template() ) {
+			return dirname( __FILE__ ) . '/theme/comments.php';
+		}
+		return $file;
+	}
+
 
 	/** 
 	 * Switches the template file (the actual HTML) to the one in this plugin, not to the theme's template.
@@ -327,7 +342,7 @@ class Storyform {
 				appKey: '<?php echo Storyform_Options::get_instance()->get_application_key() ?>'
 			};
 
-			/*-- START RENDER SCRIPT --*/!function(a){function b(a,b){var c=new XMLHttpRequest;c.onreadystatechange=function(){4===c.readyState&&(c.status>=200&&c.status<300?b(null,c):b(c),c.onreadystatechange=function(){})},c.open("GET",a.uri,!0),c.send()}document.documentElement.className+=" js";var c=void 0===_template.host?"//storyform.co":_template.host,d=_template.version||"v0.5",e=_template.generator?"&generator="+_template.generator:"",f=c+"/"+d+"/render/"+a._template.group+"?appKey="+encodeURIComponent(_template.appKey)+"&uri="+encodeURIComponent(document.location.href)+"&lastModified="+encodeURIComponent(document.lastModified)+"&templateGroup="+encodeURIComponent(_template.group)+"&width="+window.innerWidth+"&height="+window.innerHeight+"&deviceWidth="+window.screen.width+"&deviceHeight="+window.screen.height+e;a.App={Data:{render:{callback:function(){},data:null,uri:f}}},b({uri:f},function(b,c){if(c){var d=a.App.Data.render.data=JSON.parse(c.responseText);a.App.Data.render.callback(null,d),a.App.Data.render.callback=function(){}}else a.App.Data.render.error=b,a.App.Data.render.callback(b),a.App.Data.render.callback=function(){}})}(this);/*-- END RENDER SCRIPT --*/
+			/*-- START RENDER SCRIPT --*/!function(a){function b(a,b){var c=new XMLHttpRequest;c.onreadystatechange=function(){4===c.readyState&&(c.status>=200&&c.status<300?b(null,c):b(c),c.onreadystatechange=function(){})},c.open("GET",a.uri,!0),c.send()}document.documentElement.className+=" js";var c=void 0===_template.host?"//storyform.co":_template.host,d=_template.version||"v0.5",e=_template.generator?"&generator="+_template.generator:"",f=c+"/"+d+"/render/"+a._template.group+"?appKey="+encodeURIComponent(_template.appKey)+"&uri="+encodeURIComponent(document.location.href)+"&lastModified="+encodeURIComponent(document.lastModified)+"&templateGroup="+encodeURIComponent(_template.group)+"&width="+window.innerWidth+"&height="+window.innerHeight+"&deviceWidth="+window.screen.width+"&deviceHeight="+window.screen.height+e;a.App=a.App||{},a.App.Data=a.App.Data||{},a.App.Data.render={callback:function(){},data:null,uri:f},b({uri:f},function(b,c){if(c){var d=a.App.Data.render.data=JSON.parse(c.responseText);a.App.Data.render.callback(null,d),a.App.Data.render.callback=function(){}}else a.App.Data.render.error=b,a.App.Data.render.callback(b),a.App.Data.render.callback=function(){}})}(this);/*-- END RENDER SCRIPT --*/
 		</script>
 		<?php
 	}

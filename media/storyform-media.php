@@ -180,7 +180,7 @@ function storyform_media_init() {
  	_storyform_add_allowed_attrs( $tags, $new_attributes );
  	
  	$tags = array( 'video' );
-    $new_attributes = array( 'nocontrols' => array(), 'noloop' => array(), 'autopause' => array() );
+    $new_attributes = array( 'nocontrols' => array(), 'noloop' => array(), 'autopause' => array(), 'usemap' => array() );
     _storyform_add_allowed_attrs( $tags, $new_attributes );
 
 }
@@ -546,6 +546,10 @@ function storyform_video_shortcode( $output, $atts ){
 		$output = preg_replace( '/\<video\s/', '<video autopause="autopause" ', $output);
 	}
 
+	if( isset( $atts['usemap'] ) ){
+		$output = preg_replace( '/\<video\s/', '<video usemap="' . $atts['usemap'] . '" ', $output);
+	}
+
 	if( isset( $atts['data-decorational'] ) ){
 		$output = preg_replace( '/\<video\s/', '<video data-decorational="' . $atts['data-decorational'] . '" ', $output);
 	}
@@ -560,10 +564,10 @@ endif;
  */
 if( ! function_exists( 'storyform_shortcode_atts_video' ) ) :
 function storyform_shortcode_atts_video( $out, $pairs, $atts ){
-	$supported = array( 'controls', 'nocontrols', 'noloop', 'autopause', 'data-decorational' );
+	$supported = array( 'controls', 'nocontrols', 'noloop', 'autopause', 'usemap', 'data-decorational' );
 	foreach ( $atts as $name => $value ) {
-		if( in_array( $value, $supported ) ) {
-			$out[$value] = $value;
+		if( in_array( $name, $supported ) ) {
+			$out[$name] = $value;
 		}
 	}
 	return $out;

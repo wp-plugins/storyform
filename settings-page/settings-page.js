@@ -81,7 +81,22 @@
   			jQuery('.storyform-navigation-title').prop('disabled', true);
   		}
 
+  		jQuery('.storyform-reset-all-button').click(function( event ) {
+  			event.preventDefault();
+  			var confirmed = confirm("Are you sure you want to reset all Storyform settings and posts?");
+  			if(!confirmed){
+				return;
+  			}
 
+  			var data = {
+				'action': 'storyform_reset_all',
+				'_ajax_nonce': storyformAjaxNonce
+			};
+			jQuery.post(ajaxurl, data, function(response) {
+				document.location.reload();
+			});
+  			
+  		});
 
 	}, false);
 

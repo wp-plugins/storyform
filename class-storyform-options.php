@@ -140,15 +140,7 @@ class Storyform_Options {
 	 *
 	 */
 	function get_application_key(){
-		$storyform_settings = $this->get_settings();
-
-		// Get application key so we can figure out which templates are supported for this site
-		if( isset( $storyform_settings['storyform_application_key'] ) ){
-			$app_key = $storyform_settings['storyform_application_key'];    
-		} else {
-			$app_key = null;
-		}
-		return $app_key;
+		return get_option( 'storyform_application_key' );
 	}
 
 	/**
@@ -156,9 +148,7 @@ class Storyform_Options {
 	 *
 	 */
 	function update_application_key( $appKey ){
-		$storyform_settings = $this->get_settings();
-		$storyform_settings['storyform_application_key'] = $appKey;
-		$update = update_option( 'storyform_settings', $storyform_settings );
+		$update = update_option( 'storyform_application_key', $appKey );
 	}
 
 	/**
@@ -233,7 +223,7 @@ class Storyform_Options {
 		} 
 
 		if( !isset( $links ) || !$links ){
-			$links = 'vertical';
+			$links = 'horizontal';
 		}
 
 		return $links;
@@ -343,6 +333,29 @@ class Storyform_Options {
 	}
 
 	/**
+	 * Resets all settings and post data.
+	 *
+	 */
+	function reset_all(){
+		global $wpdb;
+
+		delete_option( 'storyform_all_scripts' );
+		delete_option( 'storyform_all_functions' );
+		delete_option( 'storyform_settings' );
+		delete_option( 'storyform_site_registered' );
+		delete_option( 'storyform_version' );
+		delete_option( 'storyform_application_key' );
+		delete_option( $this->option_name );
+
+		$wpdb->delete( $wpdb->postmeta, array( 'meta_key' => $this->meta_name ) );
+		$wpdb->delete( $wpdb->postmeta, array( 'meta_key' => $this->ab_name ) );
+		$wpdb->delete( $wpdb->postmeta, array( 'meta_key' => $this->featured_image_name ) );
+		$wpdb->delete( $wpdb->postmeta, array( 'meta_key' => $this->layout_type_name ) );
+		$wpdb->delete( $wpdb->postmeta, array( 'meta_key' => $this->post_meta_settings ) );
+		$wpdb->delete( $wpdb->postmeta, array( 'meta_key' => 'storyform_text_overlay_areas' ) );
+	}
+
+	/**
 	 * Migrates old Narrative plugin data over to Storyform
 	 *
 	 */
@@ -403,6 +416,16 @@ class Storyform_Options {
 				update_post_meta( $option['id'], $this->meta_name, $option['template'] );
 			}
 		}
+
+		// Move application key to its own setting if it exists
+		$storyform_settings = $this->get_settings();
+		if( isset( $storyform_settings[ 'storyform_application_key' ] ) ) {
+			$appKey = $storyform_settings[ 'storyform_application_key' ];
+			$this->update_application_key( $appKey );
+			unset( $storyform_settings[ 'storyform_application_key' ] );
+			update_option( 'storyform_settings', $storyform_settings );	
+		}
+
 	}
 
 	function get_all_scripts(){

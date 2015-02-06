@@ -15,6 +15,7 @@ class Storyform_Settings_Page
 		add_action( 'admin_init', array( $this, 'page_init' ) );
 		add_action( 'wp_ajax_storyform_save_app_key', array( $this, 'storyform_save_app_key' ) );
 		add_action( 'wp_ajax_storyform_save_site_registered', array( $this, 'storyform_save_site_registered' ) );
+		add_action( 'wp_ajax_storyform_reset_all', array( $this, 'storyform_reset_all' ) );
 		if( ! function_exists( 'wpcom_vip_get_resized_attachment_url' ) ){
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		}
@@ -100,14 +101,6 @@ class Storyform_Settings_Page
 			'storyform-setting-admin' // Page
 		);
 
-		add_settings_field(
-			'storyform_application_key', // ID
-			'Storyform application key', // Title
-			array( $this, 'storyform_application_key_callback' ), // Callback
-			'storyform-setting-admin', // Page
-			'storyform_section_id' // Section
-		);
-
 		add_settings_section(
 			'storyform_section_navigation', // ID
 			'Navigation', // Title
@@ -150,9 +143,17 @@ class Storyform_Settings_Page
 		);
 
 		add_settings_field(
-			'storyform_selected_functions', // ID
+			'storyform_manually_insert', // ID
 			'Manually insert scripts', // Title
 			array( $this, 'storyform_manual_insert_callback' ), // Callback
+			'storyform-setting-admin', // Page
+			'storyform_advanced_section_id' // Section
+		);
+
+		add_settings_field(
+			'storyform_reset_all', // ID
+			'Reset Storyform', // Title
+			array( $this, 'storyform_reset_all_callback' ), // Callback
 			'storyform-setting-admin', // Page
 			'storyform_advanced_section_id' // Section
 		);
@@ -167,10 +168,6 @@ class Storyform_Settings_Page
 	public function sanitize( $input )
 	{
 		$new_input = Storyform_Options::get_instance()->get_settings();
-
-		if( isset( $input['storyform_application_key'] ) ) {
-			$new_input['storyform_application_key'] = sanitize_text_field( $input['storyform_application_key'] );
-		}
 
 		if( isset( $input['storyform_navigation_width'] ) ) {
 			$new_input['storyform_navigation_width'] = sanitize_text_field( $input['storyform_navigation_width'] );
@@ -318,7 +315,15 @@ class Storyform_Settings_Page
 		die(); 
 	}
 
-	
+	/**
+	 *  Admin ajax call which resets everything
+	 *
+	 */
+	public function storyform_reset_all() {
+		check_ajax_referer( 'storyform-reset-all-nonce' );
+		Storyform_Options::get_instance()->reset_all();
+		die(); 
+	}
 
 	/**
 	 * Print the Section text
@@ -372,10 +377,10 @@ class Storyform_Settings_Page
 					<label><input type="radio" id="storyform-navigation-width-full" class="storyform-navigation-width" name="storyform_settings[storyform_navigation_width]" value="full" <?php echo $width_full ?> />Full width</label>
 				</div>
 	
-				<div class="storyform-input-label">Menu</div>
+				<div class="storyform-input-label">Links</div>
 				<div class="storyform-input-group">
 					<div class="storyform-input-group-menu">
-						<a href="<?php echo admin_url( 'nav-menus.php?action=locations' ) ?>">Choose or add custom menu</a>
+						<a class="button" href="<?php echo admin_url( 'nav-menus.php?action=locations' ) ?>">Add/Edit links</a>
 					</div>
 					<div class="storyform-input-group-menu">
 						<label><input type="radio" name="storyform_settings[storyform_navigation_links]" value="horizontal" <?php echo $links_horiz ?> />Horizontal</label>
@@ -449,19 +454,6 @@ class Storyform_Settings_Page
 	public function print_advanced_section_info()
 	{
 		print '<a href="#" class="storyform_toggle_advanced" data-hide-text="Hide advanced settings" data-show-text="Show advanced settings"></a>';
-	}
-
-	/**
-	 * Get the settings option array and print one of its values
-	 */
-	public function storyform_application_key_callback()
-	{
-		$key = Storyform_Options::get_instance()->get_application_key();
-		printf(
-			'<input type="text" id="storyform_application_key" name="storyform_settings[storyform_application_key]" value="%s" /><br />
-			<label><small>Sign up at <a target="_blank	" href="//storyform.co/#signup">Storyform</a></small></label>',
-			$key ? esc_attr( $key ) : ''
-		);
 	}
 
 	/**
@@ -577,6 +569,17 @@ class Storyform_Settings_Page
 	public function storyform_manual_insert_callback()
 	{
 		?><span>To manually insert scripts, follow these <a href="https://storyform.co/docs/wordpress#toc5">instructions</a>.</span><?php
+	}
+
+	public function storyform_reset_all_callback()
+	{
+		$ajax_nonce = wp_create_nonce( "storyform-reset-all-nonce" );
+		?>
+		<button class="storyform-reset-all-button">Reset all</button><br /><small>Resets all Storyform settings. Removes all Storyform data. Turns off Storyform on all posts.</small>
+		<script>
+			var storyformAjaxNonce = '<?php echo $ajax_nonce; ?>';
+		</script>
+		<?php	
 	}
 
 	protected function get_plugin_dir_for_function_name( $id ){

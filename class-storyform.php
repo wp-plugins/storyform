@@ -119,7 +119,7 @@ class Storyform {
 			add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_files' ), 10000 );
 
 
-			$content_width = 1024;
+			$content_width = 1920;
 
 		// Check if this is a non-Storyform side of a/b tested Storyform article
 		} else if( $this->is_sometimes_storyform() ) {

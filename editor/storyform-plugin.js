@@ -12,6 +12,8 @@
             var that = this;
             this.editor = editor;
 
+            this._polyfillEditor();
+
             // Add a button to mark pullquotes with span pullquote class
             editor.addButton('pullquote', {
                 title : 'Pullquote',
@@ -24,6 +26,7 @@
                 editor.focus();
                 editor.formatter.toggle('pullquote');
                 editor.nodeChanged();
+
             });
 
             // Add a button to insert page breaks before an element
@@ -189,6 +192,25 @@
             });
         },
 
+        // Necessary for WP 3.5 to implement Editor.on
+        _polyfillEditor: function(){
+            if(!this.editor.on){
+                this.editor.on = function(fn, cb){
+                    for( var method in this ){
+                        if(method.toLowerCase() === 'on' + fn.toLowerCase()){
+                            return this[method].add(function(ed, ev){
+                                return cb(ev);
+                            });
+                        }
+                    }
+                    console.error(fn + " does not exist on editor");
+                }    
+            }
+            if(!tinymce.util.VK){
+                tinymce.util.VK = tinymce.VK;
+            }
+        },
+
         _syncData: function(){
             var dom = this.editor.dom;
             var that = this;
@@ -239,19 +261,38 @@
         // Show popup for the attachment to edit overlay text areas
         showPopup: function(imageNode){
             var dom = this.editor.dom;
-            classes = tinymce.explode( imageNode.className, ' ' );
-
-            var attachmentId;
-            tinymce.each( classes, function( name ) {
-                if ( /^wp-image/.test( name ) ) {
-                    attachmentId = parseInt( name.replace( 'wp-image-', '' ), 10 );
-                }
-            });
+            
             // Attachment id might be empty, such as an image inserted from a URL
             var that = this;
-            storyform.showPopupForAttachment( attachmentId, imageNode.src, dom.getAttrib( imageNode, 'data-text-overlay' ), function( areas ){
-                that.insertOverlayAreasIntoEditor( imageNode, areas );
-            });    
+            var metadata = this._getMetadataForNode(imageNode);
+            storyform.showPopupForCurrentAttachments( metadata.id );    
+        },
+
+        _getMetadataForNode: function(node){
+            var metadata = {
+                id: this._getAttachmentIdForNode(node),
+                url: node.src,
+                areas: {}
+            }
+            var that = this;
+            if(node.hasAttribute('data-text-overlay')){
+                metadata.areas.caption = node.getAttribute('data-text-overlay').split(',').map(function(a){return storyform.parseCoordString(a)});
+            }
+            if(node.hasAttribute('data-area-crop')){
+                metadata.areas.crop = storyform.parseCoordString(node.getAttribute('data-area-crop'));
+            }
+            
+            return metadata;
+        },
+
+        _getAttachmentIdForNode: function(node){
+            var classes = tinymce.explode( node.className, ' ' );
+            for(var i = 0, l = classes.length; i < l; i++){
+                var name = classes[i];
+                if ( /^wp-image/.test( name ) ) {
+                    return parseInt( name.replace( 'wp-image-', '' ), 10 );
+                }
+            }
         },
 
         _isAttributeDecorational: function(attribute){
@@ -384,9 +425,32 @@
         },
 
         // Actually inserts the text overlay data from the popup into the editor
-        insertOverlayAreasIntoEditor: function(imageNode, areas){
+        setCaptionAreaOnAttachment: function(id, areas){
             var dom = this.editor.dom;
-            dom.setAttrib( imageNode, 'data-text-overlay', areas.join(","));
+            var body = this.editor.getBody();
+            var el = body.querySelector('.wp-image-' + id);
+            var attr = areas.map(function(a){return storyform.serializeCoord(a)}).join(",");
+            if(attr){
+                dom.setAttrib( el, 'data-text-overlay', attr);    
+            } else {
+                el.removeAttribute('data-text-overlay');
+            }
+            
+        },
+
+        setCropAreaOnAttachment: function(id, areas){
+            var dom = this.editor.dom;
+            var body = this.editor.getBody();
+            var el = body.querySelector('.wp-image-' + id);
+            if(areas){
+                var attr = storyform.serializeCoord(areas);    
+            }
+            if(attr){
+                dom.setAttrib( el, 'data-area-crop', attr);    
+            } else {
+                el.removeAttribute('data-area-crop');
+            }
+            
         },
 
         // Avoid standard MCE placeholders
@@ -555,6 +619,52 @@
             }
             this._layoutType = type;
             
+        },
+
+        /**
+         *  Checks whether there are any pullquotes in the post.
+         */
+        hasPullquote: function(){
+            var body = this.editor.getBody();
+            return !!body.querySelector('span.pullquote');
+        },
+
+        /**
+         *  Gets the length of text in the post
+         */
+        getBodyTextLength: function(){
+            var body = this.editor.getBody();
+            return body.textContent.length;
+        },
+
+        /**
+         *  Gets all figures with captions in the post
+         */
+        getFigures: function(){
+            var body = this.editor.getBody();
+            return body.querySelectorAll('.wp-caption');
+        },
+
+        /**
+         *  Gets all images in the post
+         */
+        getImages: function(){
+            var body = this.editor.getBody();
+            return body.querySelectorAll('img');
+        },
+
+        /**
+         *  Returns an array of image metadata that is specific to storyform for all images in the post.
+         */
+        getImagesMetadata: function(){
+            var data = [];
+            var images = this.getImages();
+
+            var that = this;
+            [].forEach.call(images, function(image){
+                data.push(that._getMetadataForNode(image));
+            });
+            return data;
         },
 
         /**

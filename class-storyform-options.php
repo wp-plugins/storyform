@@ -12,6 +12,7 @@ class Storyform_Options {
 	private $featured_image_name = 'storyform_use_featured_image';
 	private $layout_type_name = 'storyform_layout_type';
 	private $post_meta_settings = 'storyform_settings';
+	private $crop_name = 'storyform_areas_crop';
 
 	protected static $instance = false;
 
@@ -133,6 +134,22 @@ class Storyform_Options {
 			}
 		}
 		return $settings;
+	}
+
+	public function get_crop_area_for_attachment( $attachment_id ){
+		return get_post_meta( $attachment_id , $this->crop_name, true );
+	}
+
+	public function update_crop_area_for_attachment( $attachment_id, $value ){
+		update_post_meta( $attachment_id, $this->crop_name, $value);
+	}
+
+	public function get_caption_area_for_attachment( $attachment_id ) {
+		return get_post_meta( $attachment_id, 'storyform_text_overlay_areas', true );
+	}
+
+	public function update_caption_area_for_attachment( $attachment_id, $value ){
+		update_post_meta( $attachment_id, 'storyform_text_overlay_areas', $value);
 	}
 
 	/**
@@ -353,6 +370,8 @@ class Storyform_Options {
 		$wpdb->delete( $wpdb->postmeta, array( 'meta_key' => $this->layout_type_name ) );
 		$wpdb->delete( $wpdb->postmeta, array( 'meta_key' => $this->post_meta_settings ) );
 		$wpdb->delete( $wpdb->postmeta, array( 'meta_key' => 'storyform_text_overlay_areas' ) );
+		$wpdb->delete( $wpdb->postmeta, array( 'meta_key' => $this->crop_name ) );
+		
 	}
 
 	/**

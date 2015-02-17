@@ -464,7 +464,7 @@ class Storyform_Settings_Page
 		$add_image_sizes = Storyform_Options::get_instance()->get_add_image_sizes();
 		printf(
 			'<input type="checkbox" id="storyform_add_image_sizes" name="storyform_settings[storyform_add_image_sizes]" %s />
-			<label><small>Adds a 1366x768 and 1920x1080 image candidate for newly uploaded media.</small></label>',
+			<label><small>Adds a 1366x768, 1920x1080 and 2880x1800 image candidate for newly uploaded media.</small></label>',
 			$add_image_sizes ? 'checked' : ''
 		);
 	}

@@ -37,7 +37,8 @@ class Storyform {
 		'do_shortcode'							=> array( 'the_content', 11 ),
 		'WP_Embed:autoembed'					=> array( 'the_content', 8 ),
 		'WP_Embed:run_shortcode'				=> array( 'the_content', 8 ),
-		'storyform_remove_src_attribute'		=> array( 'the_content', 5 )
+		'storyform_remove_src_attribute'		=> array( 'the_content', 5 ),
+		'storyform_replace_crop'				=> array( 'the_content', 20 )
 	);
 
 	private static $actions_to_filter = array( 'wp_head', 'wp_footer', 'wp_print_scripts', 'wp_print_styles', 'the_content' );

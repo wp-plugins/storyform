@@ -58,6 +58,31 @@ class Storyform_Admin_Meta_Box {
 			</select>
 			<div class="storyform-post-options">
 				<div class="storyform-input-group">
+					<progress class="storyform-improve-progress storyform-improve-low" value="1" max="4" ></progress><span class="storyform-improve-text storyform-improve-low"><span class="storyform-improve-count">0</span> post recommendation(s)</span>
+					<ul class="storyform-improve-items">
+						<li class="storyform-improve-bad" id="storyform-improve-description-pullquote"><span id="storyform-improve-pullquote-text" data-no="No pullquotes" data-yes="Includes pullquote"></span>
+							<div data-storyform-tooltip="storyform-improve-description-pullquote">
+								<div class="storyform-tooltip-title">Identify interesting snippets of text</div>
+								Add pullquotes by highlighting a snippet of text in your post and clicking the pullquote button in the editor toolbar. <br /> <img width="23" height="23" title="" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC4AAAAuCAYAAABXuSs3AAABfGlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGAqSSwoyGFhYGDIzSspCnJ3UoiIjFJgv8PAzcDDIMRgxSCemFxc4BgQ4MOAE3y7xsAIoi/rgsxK8/x506a1fP4WNq+ZclYlOrj1gQF3SmpxMgMDIweQnZxSnJwLZOcA2TrJBUUlQPYMIFu3vKQAxD4BZIsUAR0IZN8BsdMh7A8gdhKYzcQCVhMS5AxkSwDZAkkQtgaInQ5hW4DYyRmJKUC2B8guiBvAgNPDRcHcwFLXkYC7SQa5OaUwO0ChxZOaFxoMcgcQyzB4MLgwKDCYMxgwWDLoMjiWpFaUgBQ65xdUFmWmZ5QoOAJDNlXBOT+3oLQktUhHwTMvWU9HwcjA0ACkDhRnEKM/B4FNZxQ7jxDLX8jAYKnMwMDcgxBLmsbAsH0PA4PEKYSYyjwGBn5rBoZt5woSixLhDmf8xkKIX5xmbARh8zgxMLDe+///sxoDA/skBoa/E////73o//+/i4H2A+PsQA4AJHdp4IxrEg8AAAAJcEhZcwAAFiUAABYlAUlSJPAAAAGbaVRYdFhNTDpjb20uYWRvYmUueG1wAAAAAAA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJYTVAgQ29yZSA1LjQuMCI+CiAgIDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+CiAgICAgIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiCiAgICAgICAgICAgIHhtbG5zOmV4aWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20vZXhpZi8xLjAvIj4KICAgICAgICAgPGV4aWY6UGl4ZWxYRGltZW5zaW9uPjQ2PC9leGlmOlBpeGVsWERpbWVuc2lvbj4KICAgICAgICAgPGV4aWY6UGl4ZWxZRGltZW5zaW9uPjQ2PC9leGlmOlBpeGVsWURpbWVuc2lvbj4KICAgICAgPC9yZGY6RGVzY3JpcHRpb24+CiAgIDwvcmRmOlJERj4KPC94OnhtcG1ldGE+CtvE32YAAAHnSURBVGgF7Zk7qgIxFIb/GS8+sFHw1dha2drqGtyAu7B1AW5ErLS31QUIIoqglY0Kgm9EvfcmMEVwwsSrJ9xAAjKek8f5/HNyjOgcj8dvGNhcA5k5sgXXvXNWcd2KfwUFbDabuFwuQcPI+huNhu/aNlV8ZSF0WsUJxfVd2iruKwuh01jFA+u4qmj1eh2xWOxp+O/tE/v9HrvdDuPxGKPRCI/H42ncq46PgcsCx+NxsFcul0OhUEClUkG73cZqtZJNUfJrT5VkMolqtYpQKKQEKBtEovhsNkOn04HjOIhGo8hmsyiXy1x1BsLsYrGI4XAo4wr0kyh+v9/5/eZ8PmO73WIymaDVagkw6XRasF81SMD9INgBZR/Ea6lUynv7p6c28EwmI1Sd0+n0J2BvkhZw13VRKpW8mPy5Xq8F+1WD5HDm83nUajXOEolEkEgkBLVvtxvYAX6nkYB7tVsG1uv1sNlsZN1KfhJwWeT5fI7BYIDFYiEbouwnAV8ul+j3+xyC/ew7HA78a/96vSqDBQ0kAWelbzqdBsV+q19LVXmLUDLZWPCPpQorb+FwmOvDcpy6fQy82+1SswrrG5sqFlzYRw2GVVyDyEIIYxUPLIfsWvofm2P/ddO8LcbmuAXXnCmwilvFFRX4AaQ/f2y1tlKbAAAAAElFTkSuQmCC" />
+							</div>
+						</li>
+						<li class="storyform-improve-bad" id="storyform-improve-crop"><span id="storyform-improve-description-crop"><span id="storyform-improve-crop-count">0</span> of <span id="storyform-improve-crop-total">12</span> images optimized.</span> <a class="storyform-improve-crop-action">Optimize</a>
+							<div data-storyform-tooltip="storyform-improve-description-crop">
+								<div class="storyform-tooltip-title">Optimize images for full bleed</div>
+								Enable smart cropping of images to keep them full bleed on different screen sizes. By identifying the subject of an image, images can appropriately be cropped while still keeping what's important.
+							</div>
+						</li>
+						
+						<li class="storyform-improve-bad" id="storyform-improve-caption"><span id="storyform-improve-description-caption"><span id="storyform-improve-caption-count">0</span> of <span id="storyform-improve-caption-total">0</span> captions optimized.</span> <a class="storyform-improve-caption-action">Optimize</a>
+							<div data-storyform-tooltip="storyform-improve-description-caption">
+								<div class="storyform-tooltip-title">Specify caption placement</div>
+								Allow captions to be placed directly on top of the photo without a background plate by specifying areas of the photo where light or dark text can still be visible.
+							</div>
+						</li>
+					</ul>
+
+				</div>
+				<div class="storyform-input-group">
 					<strong>Layout</strong>
 					<label class="storyform-radio-label"><input type="radio" class="storyform-layout-type" name="storyform-layout-type" value="freeflow" <?php echo $layout_type === 'freeflow' ? 'checked' : '' ?>/>Free flow <a id="storyform-layout-description-freeflow" class="storyform-layout-description"></a></label>
 					<div data-storyform-tooltip="storyform-layout-description-freeflow">

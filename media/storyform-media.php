@@ -53,20 +53,25 @@ function storyform_attachment_fields_to_edit( $form_fields, $post ){
 	
 	$url = esc_js( wp_get_attachment_url( $post->ID ) );
 	$metadata = wp_get_attachment_metadata( $post->ID );
-	$storyformMeta = get_post_meta( $post->ID, 'storyform_text_overlay_areas', true );
+	$captionMeta = Storyform_Options::get_instance()->get_caption_area_for_attachment( $post->ID );
+	$cropMeta = Storyform_Options::get_instance()->get_crop_area_for_attachment( $post->ID );
 
-	$form_fields['storyform_text_overlay_areas'] = array(
-		'label' =>  esc_attr__( "Text overlay areas" ),
+	$form_fields['storyform_areas'] = array(
+		'label' =>  esc_attr__( "Crop/Caption areas" ),
 		'input' => 'html',
 		'html' => '<div>' .
-			'<p class="storyform-overlay-count" data-textContent-multiple="' .  esc_attr__( "{{count}} text overlay area(s)" ) . '" data-textContent="' .  esc_attr__( "No text overlay areas." ) . '"></p>' .
-			'<button class="button-primary" id="storyform-add-overlay" data-textContent-multiple="' .  esc_attr__("Edit text over area(s)") . '" data-textContent="' .  esc_attr__( "Add text overlay area" ) . '"></button>' .
-			"<input type='hidden' id='storyform-text-overlay-areas' name='attachments[{$post->ID}][storyform_text_overlay_areas]' value='" . wp_kses_post( $storyformMeta ) . "' />" .
+			'<button class="button-primary" id="storyform-add-overlay" data-textContent-multiple="' .  esc_attr__("Edit crop/caption area(s)") . '" data-textContent="' .  esc_attr__( "Add caption/crop area" ) . '"></button>' .
 			'<script> 
-				storyform.attachment = { 
-					url: "' . $url . '"
-				};
-				storyform.initAttachmentFields && storyform.initAttachmentFields();
+				(function(){
+					var id = "' . $post->ID . '";
+					var url = "' . $url . '";
+					var areas = {
+						crop: "' . wp_kses_post( $cropMeta ) . '",
+						caption: "' . wp_kses_post( $captionMeta ) . '"
+					};
+					storyform.initAttachmentFields && storyform.initAttachmentFields(id, url, areas);
+				})()
+				
 			</script>' .
 		'</div>'
 	);
@@ -81,9 +86,7 @@ add_filter( 'attachment_fields_to_edit', 'storyform_attachment_fields_to_edit', 
  *
  */
 function storyform_get_overlay_areas( ) {
-	$storyformMeta = get_post_meta( intval( $_POST['attachment_id'] ), 'storyform_text_overlay_areas', true );
-	echo $storyformMeta;
-
+	echo Storyform_Options::get_instance()->get_caption_area_for_attachment( intval( $_POST['attachment_id'] ) );
 	die(); 
 }
 add_action( 'wp_ajax_storyform_get_overlay_areas', 'storyform_get_overlay_areas' );
@@ -94,25 +97,20 @@ add_action( 'wp_ajax_storyform_get_overlay_areas', 'storyform_get_overlay_areas'
  *
  */
 function storyform_save_overlay_areas( ) {
-	update_post_meta( intval( $_POST['attachment_id'] ), 'storyform_text_overlay_areas', sanitize_text_field( $_POST['storyform_text_overlay_areas'] ));
-	echo $_POST['areas'];
+	Storyform_Options::get_instance()->update_caption_area_for_attachment( intval( $_POST['attachment_id'] ), sanitize_text_field( $_POST['storyform_text_overlay_areas'] ) );
 	die(); 
 }
 add_action( 'wp_ajax_storyform_save_overlay_areas', 'storyform_save_overlay_areas' );
 
-
 /**
- *  Saves text overlay area data with the media post.
+ *  Admin ajax call to save crop zone data to attachment
  *
  */
-function storyform_attachment_field_credit_save( $post, $attachment ) {
-	if( isset( $attachment['storyform_text_overlay_areas'] ) ) {
-		update_post_meta( $post['ID'], 'storyform_text_overlay_areas', sanitize_text_field( $attachment['storyform_text_overlay_areas'] ) );
-	}
-
-	return $post;
+function storyform_save_crop_areas() {
+	Storyform_Options::get_instance()->update_crop_area_for_attachment( intval( $_POST['attachment_id'] ), sanitize_text_field( $_POST['storyform_crop_areas'] ) );
+	die(); 
 }
-add_filter( 'attachment_fields_to_save', 'storyform_attachment_field_credit_save', 10, 2 );
+add_action( 'wp_ajax_storyform_save_crop_areas', 'storyform_save_crop_areas' );
 
 /**
  *
@@ -122,6 +120,16 @@ add_filter( 'attachment_fields_to_save', 'storyform_attachment_field_credit_save
 function storyform_read_single_overlay ( $overlay ) {
 	$parts = explode( ' ', $overlay );
 	return array( 'shape' => $parts[0], 'x1' => $parts[1], 'y1' => $parts[2], 'x2' => $parts[3], 'y2' => $parts[4], 'classNames' => array_slice( $parts, 5 ) );
+}
+
+/**
+ *
+ * Reads a single crop zone item from the list of items coming out of the DB and converts it into a named strucure
+ *
+ */
+function storyform_read_single_crop ( $str ) {
+	$parts = explode( ' ', $str );
+	return array( 'shape' => $parts[0], 'x1' => $parts[1], 'y1' => $parts[2], 'x2' => $parts[3], 'y2' => $parts[4] );
 }
 
 /**
@@ -142,7 +150,7 @@ endif;
 add_filter( 'media_send_to_editor', 'storyform_media_send_to_editor', 30, 3 );
 
 /**
- *  Adds data(-)sources, data-text-overlay, data-decorational attributes to image/video attachment html,
+ *  Adds data(-)sources, data-text-overlay, data-area-crop, data-decorational attributes to image/video attachment html,
  *  which enables responsive images to choose the best image to load on the client, caption overlays and 
  *	layout control.
  *
@@ -155,15 +163,18 @@ function _storyform_add_data_attributes( $html, $attachment_id, $post_id ) {
 		$datasources = storyform_attachment_to_datasources( $attachment_id );
 		$datasources = $datasources ? 'data-sources="' . $datasources . '"' : '';
 
-		$textOverlay = get_post_meta( $attachment_id, 'storyform_text_overlay_areas', true );
+		$textOverlay = Storyform_Options::get_instance()->get_caption_area_for_attachment( $attachment_id );
 		$textOverlay = $textOverlay ? 'data-text-overlay="' . esc_attr( $textOverlay ). '"' : '';
+
+		$cropZone = Storyform_Options::get_instance()->get_crop_area_for_attachment( $attachment_id );
+		$cropZone = $cropZone ? 'data-area-crop="' . esc_attr( $cropZone ). '"' : '';
 
 		$layout_type = Storyform_Options::get_instance()->get_layout_type_for_post( $post_id );
 		$decorational = ( $layout_type === 'freeflow' ) ? 'article' : 'pinned';
 
 		// Add data-source attribute to the <img> tag (whether or not its surrounded by caption shortcode).
 		// Already escaped in the function
-		return preg_replace( '/(\<img|\[video) /', '$1 ' . $textOverlay . ' data-decorational="' . $decorational . '" ' . $datasources . ' ', $html);
+		return preg_replace( '/(\<img|\[video) /', '$1 ' . $textOverlay . ' ' . $cropZone . ' data-decorational="' . $decorational . '" ' . $datasources . ' ', $html);
 	}
 
 	return $html;
@@ -171,16 +182,20 @@ function _storyform_add_data_attributes( $html, $attachment_id, $post_id ) {
 endif;
 
 /**
- *	Allow data-text-overlay, data-decorational, data-source attributes that would otherwise get stripped in VIP.
+ *	Allow data-text-overlay, data-decorational, data-area-crop, data-source attributes that would otherwise get stripped in VIP.
  *
  */
 function storyform_media_init() {
     $tags = array( 'img', 'video' );
-    $new_attributes = array( 'data-text-overlay' => array(), 'data-sources' => array(), 'data-decorational' => array() );
+    $new_attributes = array( 'data-text-overlay' => array(), 'data-area-crop' => array(), 'data-sources' => array(), 'data-decorational' => array() );
  	_storyform_add_allowed_attrs( $tags, $new_attributes );
  	
  	$tags = array( 'video' );
     $new_attributes = array( 'nocontrols' => array(), 'noloop' => array(), 'autopause' => array(), 'usemap' => array() );
+    _storyform_add_allowed_attrs( $tags, $new_attributes );
+
+    $tags = array( 'area' );
+    $new_attributes = array( 'data-type' => array() );
     _storyform_add_allowed_attrs( $tags, $new_attributes );
 
 }
@@ -196,7 +211,7 @@ function _storyform_add_allowed_attrs( $tags, $new_attributes ){
 }
 
 /**
- *	Allow data-text-overlay, data-decorational, data-source attributes to remain between visual and text views.
+ *	Allow data-text-overlay, data-decorational, data-area-crop, data-source attributes to remain between visual and text views.
  *
  */
 function storyform_tiny_mce_before_init( $init ) { 
@@ -307,7 +322,8 @@ if ( ! function_exists( 'storyform_media_setup' ) ) :
 function storyform_media_setup() {
 	if( Storyform_Options::get_instance()->get_add_image_sizes() ){
 		add_image_size( 'storyform_xlarge', 1366, 768, false );
-		add_image_size( 'storyform_xxlarge', 1920, 1080, false );		
+		add_image_size( 'storyform_xxlarge', 1920, 1080, false );	
+		add_image_size( 'storyform_xxxlarge', 2880, 1800, false );
 	}
 	
 }
@@ -315,7 +331,7 @@ endif; // storyform_setup
 add_action( 'after_setup_theme', 'storyform_media_setup' );
 
 /*
- * Setups up content filters that run before post becomes visible.
+ * Sets up up content filters that run before post becomes visible.
  * Running at wp action since that is when we will be sure we have a queried post id to know what template were using.
  * 
  */
@@ -323,13 +339,29 @@ function storyform_wp(){
 	if( Storyform::template_in_use() ) {
 		add_filter( 'img_caption_shortcode', 'storyform_caption_shortcode', 10, 3 );
 		add_filter( 'wp_video_shortcode', 'storyform_video_shortcode', 10, 2 );
+		add_filter( 'embed_oembed_html', 'storyform_embed_oembed_html', 10, 4 );
 		add_filter( 'shortcode_atts_video', 'storyform_shortcode_atts_video', 10, 3 );
+		add_filter( 'shortcode_atts_embed', 'storyform_shortcode_atts_embed', 10, 3 );
 		add_filter( 'the_content', 'storyform_remove_src_attribute', 5 ); // Run before so there is a src attribute to push to data-sources where other lazyloaders might get to it first
+		add_filter( 'the_content', 'storyform_replace_crop', 20 ); // Run after shortcodes run to only fixup non shortcodes
 		add_filter( 'wp_get_attachment_image_attributes', 'storyform_get_attachment_image_attributes', 10, 2 );
 		add_filter( 'post_thumbnail_size', 'storyform_post_thumbnail_size', 1000 );
 	}
 }
 add_action( 'wp', 'storyform_wp' );
+
+/*
+ * Adds data-autopause to embeds if specified on shortcode.
+ * 
+ */
+if( ! function_exists( 'storyform_embed_oembed_html' )) :
+function storyform_embed_oembed_html( $cache, $url, $attr, $post_ID ) {
+	if( in_array( 'autopause', $attr ) ){
+		return preg_replace( '/<iframe /i', '<iframe data-autopause ', $cache );
+	}
+	return $cache;
+}
+endif; // storyform_embed_oembed_html
 
 /*
  * Get caption shortcodes to use HTML5 standard <figure> elements. Also, use optional data-sources attribute to 
@@ -352,25 +384,24 @@ function storyform_caption_shortcode( $val, $attr, $content = null ) {
 
 	/**
 	 *
-	 * We do not add text overlay and responsive image data to the caption shortcode, but the internal
+	 * We do not add map/area and responsive image data to the caption shortcode, but the internal
 	 * <img> element instead. This is because the editor destroys any unknown attributes on the shortcode.
 	 *
 	 * Format of data-sources attribute:
 	 *   Comma separated list of
 	 *     <url> <pixelRatio>x <width>w <height>h
 	 * 
-	 * Format of data-attachment attribute:
+	 * Format of data- map/area attribute:
 	 *   Comma separated list of
-	 *     <shape> <relativeX1> <relativeY1> <relativeX2> <relativeY2> <className1> <className2> ...
+	 *     <shape> <relativeX1> <relativeY1> <relativeX2> <relativeY2> [<className1> <className2> ...]
 	 * 
 	 *   Where coordinates are fractionally relative to the the width and height of the image
-	 * 
 	 * 
 	 * Sample Output:
 	 * <figure>
 	 *      <picture>
-	 *          <source data-sources=“<url> <pixelRatio>x <width>w <height>h” usemap=“#urlHash”/>
-	 *          <source data-sources=“<url> <pixelRatio>x <width>w <height>h” usemap=“#urlHash2”/>
+	 *          <source data-sources=“/url.jpg 1x 1024w 768h” usemap=“#urlHash”/>
+	 *          <source data-sources=“/url2.jpg 1x 1920w 1080h” usemap=“#urlHash2”/>
 	 *          <noscript>
 	 *              <img src="abc.jpg" />
 	 *          </noscript>
@@ -378,12 +409,12 @@ function storyform_caption_shortcode( $val, $attr, $content = null ) {
 	 *      <figcaption>…</figcaption>
 	 * </figure>
 	 * <map name=“urlHash”>
-	 *      <area shape=“rect” coords=“0,0,100,300” class=“dark-theme otherClass” />
-	 *      <area shape=“rect” coords=“100,200,300,300” class=“dark-theme otherClass” />
+	 *      <area shape=“rect” coords=“0,0,100,300” class=“dark-theme otherClass” data-type="caption" />
+	 *      <area shape=“rect” coords=“100,200,300,300” data-type="crop" />
 	 * </map>
 	 * <map name=“urlHash2”>
-	 *      <area shape=“rect” coords=“0,0,100,300” class=“dark-theme otherClass” />
-	 *      <area shape=“rect” coords=“100,200,300,300” class=“dark-theme otherClass” />
+	 *      <area shape=“rect” coords=“0,0,100,300” class=“dark-theme otherClass” data-type="caption" />
+	 *      <area shape=“rect” coords=“100,200,300,300” data-type="crop" />
 	 * </map>
 	 */
 
@@ -394,94 +425,168 @@ function storyform_caption_shortcode( $val, $attr, $content = null ) {
 		$dataDecorational = $decorationalMatch[0];
 	}
 
-	$mapshtml = '';
+	$imageAndMap = storyform_get_image_and_map( $content );
 
-	// Check if there is text overlay data to lookup
-	$textOverlayAttrPattern = '/data-text-overlay="([^\"]*)"/';
-	if( preg_match( $textOverlayAttrPattern, $content, $overlayMatch ) ) {
-
-		$overlayData = array_map( 'storyform_read_single_overlay', array_filter( explode( ",", $overlayMatch[1] ) , 'storyform_not_empty' ) );
-		
-		// Verify there is actual overlay data
-		if( count( $overlayData ) ) {
-
-			if( preg_match( '/data-sources="([^\"]+)"/', $content, $sourcesMatch ) ) {
-				// Use a <picture> element so each source can have a usemap attribute to specify the overlay area for that image candidate
-				$html = '<picture>';
-
-				$candidates = storyform_parse_data_sources( $sourcesMatch[1] );
-				if( $candidates ){
-					foreach( $candidates as $candidate ) {
-						// Generate <map> elements for candidate img by transform relative coordinates to actual pixel coordinates for the given image size
-						$mapname = md5( $candidate['url'] ) . '-overlay';
-						$usemap = 'usemap="#' . $mapname . '"';
-						$mapshtml .= '<map name="' . $mapname .'">';
-						foreach( $overlayData as $item ) {
-							$shape = $item['shape'];
-							$x1 = round( $item['x1'] * $candidate['width'] );
-							$y1 = round( $item['y1'] * $candidate['height'] );
-							$x2 = round( $item['x2'] * $candidate['width'] );
-							$y2 = round( $item['y2'] * $candidate['height'] );
-							$classNames = join( " ", $item['classNames']);
-
-							$mapshtml .= '<area shape="' . $shape . '" coords="' . $x1 . ',' . $y1 . ',' . $x2 . ',' . $y2 . '" class="' . $classNames . '" />';
-						}
-						$mapshtml .= '</map>';
-						
-						$html .= '<source ' . 'data-sources="' . $candidate['url'] . ' ' . $candidate['pixelRatio'] . 'x ' . $candidate['width'] . 'w ' . $candidate['height'] . 'h" ' . $usemap . ' />';
-					}
-					$html .= '<noscript>' . do_shortcode( $content ) . '</noscript></picture>';
-				} else {
-					$html = do_shortcode( $content );
-				}
-
-			} else if( preg_match( '/width=[\\\'\"](\d+)[\\\'\"]/', $content, $widthMatches ) && preg_match( '/height=[\\\'\"](\d+)[\\\'\"]/', $content, $heightMatches ) ) {
-				// We can just use the <img> element with a usemap attribute
-				$width = intval( $widthMatches[1] );
-				$height = intval( $heightMatches[1] );
-
-				$mapname = 'a' . rand( 1, 1000000 ) . '-overlay'; // Just use a random name
-				$usemap = 'usemap="#' . esc_attr( $mapname ) . '"';
-				$mapshtml .= '<map name="' . esc_attr( $mapname ).'">';
-				foreach( $overlayData as $item ) {
-					$shape = $item['shape'];
-					$x1 = round( $item['x1'] * $width );
-					$y1 = round( $item['y1'] * $height );
-					$x2 = round( $item['x2'] * $width );
-					$y2 = round( $item['y2'] * $height );
-					$classNames = join( " ", $item['classNames']);
-
-					$mapshtml .= '<area shape="' . $shape . '" coords="' . $x1 . ',' . $y1 . ',' . $x2 . ',' . $y2 . '" class="' . $classNames . '" />';
-				}
-				$mapshtml .= '</map>';
-				$html = preg_replace( '/<img /', '<img ' . $usemap . ' ', do_shortcode( $content ) );
-
-			} else {
-
-				// No width or height, no ability to specify text overlay because its relative
-				$html = do_shortcode( $content );
-			}
-
-			$html = preg_replace( $textOverlayAttrPattern, '', $html );
-
-		} else {
-			// No actual overlay data, just keep the <img>
-			$html = do_shortcode( $content );
-		}
-	} else {
-
-		// If there is no text overlay data, we can just keep the data-sources on the <img>
-		$html = do_shortcode( $content );
-	}
+	$html = !$imageAndMap ? do_shortcode( $content ) : $imageAndMap['image'];
 	
 	if ( $id ) {
 		$idtag = 'id="' . esc_attr( $id ) . '" ';
 	}
-	return '<figure ' . $idtag . 'aria-describedby="figcaption_' . $id . '" ' . $dataDecorational . ' >' . $html . '<figcaption>' . $caption . '</figcaption></figure>' . wp_kses_post( $mapshtml );
+	$figure = '<figure ' . $idtag . 'aria-describedby="figcaption_' . $id . '" ' . $dataDecorational . ' >' . $html . '<figcaption>' . $caption . '</figcaption></figure>';
+
+	if( $imageAndMap ){
+		$figure .= wp_kses_post( $imageAndMap['map'] );
+	}
+	return $figure;
 		
 }
 endif; // storyform_caption_shortcode
 
+/**
+ *	Generates a <picture> or <img> element and corresponding <map> element from source <img> 
+ *
+ *	@param content {String} HTML for the element
+ *
+ *	@return HTML string for the new image and map
+ */
+if( ! function_exists( 'storyform_get_image_and_map' ) ) :
+function storyform_get_image_and_map( $content ) {
+	$mapshtml = '';
+
+	// Check if there is map area data
+	$mapData = storyform_get_map_data( $content );
+	if( count( $mapData ) ) {
+
+		if( preg_match( '/data-sources="([^\"]+)"/', $content, $sourcesMatch ) ) {
+			// Use a <picture> element so each source can have a usemap attribute to specify the overlay area for that image candidate
+			$html = '<picture>';
+
+			$candidates = storyform_parse_data_sources( $sourcesMatch[1] );
+			if( $candidates ){
+				foreach( $candidates as $candidate ) {
+					// Generate <map> elements for candidate img by transform relative coordinates to actual pixel coordinates for the given image size
+					$mapname = md5( $candidate['url'] ) . '-overlay';
+					$usemap = 'usemap="#' . $mapname . '"';
+					$mapshtml .= '<map name="' . $mapname .'">' . storyform_area_html( $mapData, $candidate['width'], $candidate['height'] ) . '</map>';
+					$html .= '<source ' . 'data-sources="' . $candidate['url'] . ' ' . $candidate['pixelRatio'] . 'x ' . $candidate['width'] . 'w ' . $candidate['height'] . 'h" ' . $usemap . ' />';
+				}
+				$html .= '<noscript>' . do_shortcode( $content ) . '</noscript></picture>';
+			} else {
+
+				// Unable to find any image candidates
+				return FALSE;
+			}
+
+		} else if( preg_match( '/width=[\\\'\"](\d+)[\\\'\"]/', $content, $widthMatches ) && preg_match( '/height=[\\\'\"](\d+)[\\\'\"]/', $content, $heightMatches ) ) {
+			// We can just use the <img> element with a usemap attribute
+			$width = intval( $widthMatches[1] );
+			$height = intval( $heightMatches[1] );
+
+			$mapname = 'a' . rand( 1, 1000000 ) . '-overlay'; // Just use a random name
+			$usemap = 'usemap="#' . esc_attr( $mapname ) . '"';
+			$mapshtml .= '<map name="' . esc_attr( $mapname ).'">' . storyform_area_html( $mapData, $width, $height ) . '</map>';	
+			$html = preg_replace( '/<img /', '<img ' . $usemap . ' ', do_shortcode( $content ) );
+
+		} else {
+
+			// No width or height, no ability to specify text overlay because its relative
+			return FALSE;
+		}
+
+		$html = storyform_remove_area_attributes( $html );
+		return array( 'image' => $html, 'map' => $mapshtml );
+	}
+	return FALSE;
+}
+endif;
+
+/**
+ *	Generates structured data from HTML content string with data- attributes.
+ *
+ *	@param content {String} HTML for the element
+ *
+ *	@return The area data found from the HTML attributes
+ */
+if( ! function_exists( 'storyform_get_map_data' )) :
+function storyform_get_map_data( $content ) {
+	$result = array();
+
+	// Check if there is text overlay data to lookup
+	$textOverlayAttrPattern = '/data-text-overlay="([^\"]*)"/';
+	$cropZoneAttrPattern = '/data-area-crop="([^\"]*)"/';
+	$textOverlayMatch = preg_match( $textOverlayAttrPattern, $content, $overlayMatches );
+	$cropZoneMatch = preg_match( $cropZoneAttrPattern, $content, $cropMatches );
+	if( $textOverlayMatch && $cropZoneMatch ) {
+
+		if( $textOverlayMatch ) {
+			$result['caption'] = array_map( 'storyform_read_single_overlay', array_filter( explode( ",", $overlayMatches[1] ) , 'storyform_not_empty' ) );	
+		}
+		if( $cropZoneMatch ) {
+			$result['crop'] = array_map( 'storyform_read_single_crop', array_filter( explode( ",", $cropMatches[1] ) , 'storyform_not_empty' ) );
+		}
+	}
+	return $result;
+}
+endif; // storyform_get_map_data
+
+/**
+ *	Generates <area> HTML from map data and a media width and height
+ *
+ *	@param mapData {Array[caption|crop]} Associative array of area data
+ *	@param width {int} Width of the media to turn percentage coords to actual
+ *	@param height {int} Height of the media to turn percentage coords to actual
+ *
+ *	@return HTML string
+ */
+if( ! function_exists( 'storyform_area_html' )) :
+function storyform_area_html( $mapData, $width, $height ) {
+	$html = '';
+	if( isset( $mapData['caption'] ) ) {
+		foreach( $mapData['caption'] as $item ) {
+			$shape = $item['shape'];
+			$x1 = round( $item['x1'] * $width );
+			$y1 = round( $item['y1'] * $height );
+			$x2 = round( $item['x2'] * $width );
+			$y2 = round( $item['y2'] * $height );
+			$classNames = join( " ", $item['classNames']);
+
+			$html .= '<area shape="' . $shape . '" coords="' . $x1 . ',' . $y1 . ',' . $x2 . ',' . $y2 . '" class="' . $classNames . '" data-type="caption" />';
+		}
+	}
+
+	if( isset( $mapData['crop'] ) ) {
+		foreach( $mapData['crop'] as $item ) {
+			$shape = $item['shape'];
+			$x1 = round( $item['x1'] * $width );
+			$y1 = round( $item['y1'] * $height );
+			$x2 = round( $item['x2'] * $width );
+			$y2 = round( $item['y2'] * $height );
+
+			$html .= '<area shape="' . $shape . '" coords="' . $x1 . ',' . $y1 . ',' . $x2 . ',' . $y2 . '" data-type="crop" />';
+		}
+	}
+	return $html;
+}
+endif; // storyform_area_html
+
+/**
+ *	Removes data- attributes related to area elements
+ *
+ *	@param html {String} html string
+ *	@param width {int} Width of the media to turn percentage coords to actual
+ *	@param height {int} Height of the media to turn percentage coords to actual
+ *
+ *	@return HTML string
+ */
+if( ! function_exists( 'storyform_remove_area_attributes' )) :
+function storyform_remove_area_attributes( $html ) {
+	$textOverlayAttrPattern = '/data-text-overlay="([^\"]*)"/';
+	$cropZoneAttrPattern = '/data-area-crop="([^\"]*)"/';
+	$html = preg_replace( $textOverlayAttrPattern, '', $html );
+	$html = preg_replace( $cropZoneAttrPattern, '', $html );
+	return $html;
+}
+endif; // storyform_remove_area_attributes
 
 /**
  *	Parses the value of the data-sources attribute.
@@ -574,6 +679,19 @@ function storyform_shortcode_atts_video( $out, $pairs, $atts ){
 }
 endif;
 
+if( ! function_exists( 'storyform_shortcode_atts_embed' ) ) :
+function storyform_shortcode_atts_embed( $out, $pairs, $atts ){
+	$supported = array( 'autopause' );
+	foreach ( $atts as $name => $value ) {
+		if( in_array( $name, $supported ) ) {
+			$out[$name] = $value;
+		}
+	}
+	return $out;
+}
+endif; // storyform_shortcode_atts_embed
+
+
 /**
  *	Removes src attribute to do lazy-loading. Only replaces the src attribute with a placeholder if
  *  there is an equivalent src in data-sources attribute. Only replaces on Storyform posts.
@@ -584,13 +702,39 @@ endif;
  */
 if( ! function_exists( 'storyform_remove_src_attribute' )) :
 function storyform_remove_src_attribute( $content ){
-	// Replace all imgs with src attribute
 	return preg_replace_callback( '#<img([^>]+?)src=([\'"]?)([^\'"\s>]+)[\'"]?([^>]*)>#i', '_storyform_remove_src_attribute' , $content );
 }
-endif; // storyform_remove_src_attribute
+endif;
+
+/**
+ *	Replaces data-area-crop attribute, important for non caption shortcodes. Only replaces on Storyform posts.
+ *
+ *	@param content {String} The content
+ *
+ *	@return The HTML content
+ */
+if( ! function_exists( 'storyform_replace_crop' )) :
+function storyform_replace_crop( $content ){
+	return preg_replace_callback( '#<img([^>]+?)data-area-crop=([\'"]?)([^\'"\s>]+)[\'"]?([^>]*)>#i', '_storyform_replace_crop_attribute' , $content );
+}
+endif; // storyform_replace_crop
 
 
-if( ! function_exists( '_storyform_remove_src_attribute' )) :
+if( ! function_exists( '_storyform_replace_crop_attribute' ) ) :
+function _storyform_replace_crop_attribute( $matches ) {
+	$content = $matches[0];
+
+	$imageAndMap = storyform_get_image_and_map( $content );
+
+	if( !$imageAndMap ){
+		return $content;
+	}
+
+	return $imageAndMap['image'] . $imageAndMap['map'];
+}
+endif;
+
+if( ! function_exists( '_storyform_remove_src_attribute' ) ) :
 function _storyform_remove_src_attribute( $srcMatches ) {
 
 	$imgHtml = $srcMatches[0];
@@ -654,7 +798,7 @@ class Storyform_Media {
 	private $post_id = null;
 
 	/**
-	 *	Adds data-sources, data-decorational, data-text-overlay.
+	 *	Adds data-sources, data-decorational, data- map/area.
 	 *
 	 *	@return The post data
 	 */
@@ -677,7 +821,7 @@ class Storyform_Media {
 	}
 
 	/**
-	 *	Removes data-sources, data-decorational, data-text-overlay.
+	 *	Removes data-sources, data-decorational, data-text-overlay, data-area-crop
 	 *
 	 *	@return The post data
 	 */
@@ -685,6 +829,7 @@ class Storyform_Media {
 		$patterns = array(
 			'# data-sources=\\\(?:\'|")([^\'">]+)\\\(?:\'|")#',
 			'# data-text-overlay=\\\(?:\'|")([^\'">]+)\\\(?:\'|")#',
+			'# data-area-crop=\\\(?:\'|")([^\'">]+)\\\(?:\'|")#',
 			'# data-decorational=\\\(?:\'|")([^\'">]+)\\\(?:\'|")#'
 		);
 		return preg_replace($patterns, '', $content );

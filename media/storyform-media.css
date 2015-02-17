@@ -10,6 +10,13 @@
 	z-index:170000; /* Above Wordpress Media Modal (uploader, library, etc.) */
 }
 
+#TB_title.no-bar {
+	background: transparent;
+	border: none;
+	position: absolute;
+	width: 100%;
+}
+
 .storyform-overlay-save {
 	color:red;
 }
@@ -29,6 +36,102 @@
 
 
 /* Meta-box */
+.storyform-improve-progress {
+	width: 50px;
+	height: 14px;
+	display: inline-block;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	border: none;
+	background-color: #DDD;
+	margin-right: 10px;
+}
+
+.storyform-improve-progress::-webkit-progress-bar {
+	background-color: #DDD;
+}
+
+.storyform-improve-progress.storyform-improve-low {
+	color: red;
+}
+.storyform-improve-low.storyform-improve-progress::-webkit-progress-value {
+	background-color: red;
+}
+.storyform-improve-low.storyform-improve-progress::-moz-progress-bar {
+	background-color: red;
+}
+
+.storyform-improve-progress.storyform-improve-medium {
+	color: orange;
+}
+.storyform-improve-medium.storyform-improve-progress::-webkit-progress-value {
+	background-color: orange;
+}
+.storyform-improve-medium.storyform-improve-progress::-moz-progress-bar {
+	background-color: orange;
+}
+
+.storyform-improve-progress.storyform-improve-high {
+	color: green;
+}
+.storyform-improve-high.storyform-improve-progress::-webkit-progress-value {
+	background-color: green;
+}
+.storyform-improve-high.storyform-improve-progress::-moz-progress-bar {
+	background-color: green;
+}
+
+.storyform-improve-text {
+	position: relative;
+	padding-left: 14px;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.storyform-improve-text::before {
+	position: absolute;
+	content: "";
+	width: 0;
+	height: 0;
+	left: 0;
+	top: 4px;
+	border-top: 6px solid transparent;
+	border-bottom: 6px solid transparent;
+	border-left: 7px solid rgba(36,36,36,.54);
+	transition: 300ms;
+}
+.storyform-improve-open.storyform-improve-text::before {
+	transform: rotate(90deg);
+
+}
+.storyform-improve-good::before, .storyform-improve-bad::before {
+	font-family: 'dashicons';
+	font-size: 1.5em;
+	line-height: 0.666666666em;
+	vertical-align: middle;
+	margin-left: -5px;
+}
+.storyform-improve-good::before {
+	content: '\f147';
+	color: green;
+}
+.storyform-improve-bad::before {
+	content: '\f158';
+	color: red;
+}
+
+.storyform-improve-items {
+	display:none;
+}
+
+.storyform-improve-crop-action,
+.storyform-improve-caption-action {
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+
 #storyform-status {
 	padding: 0;
 	margin: 0;

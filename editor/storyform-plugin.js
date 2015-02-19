@@ -49,6 +49,14 @@
             editor.addCommand('break-before-page', function() {
                 var blocks = editor.selection.getSelectedBlocks();
                 var node = blocks[0];
+
+                if(editor.dom.getAttrib(node, 'data-decorational') === 'article'){
+                    alert('Page breaks are not allowed on un-pinned media. Pin the item into its place in the article by clicking pin icon in the upper-right corner of the image.');
+                    node.removeAttribute('data-break-before');
+                    node.parentNode.removeAttribute('data-break-before');
+                    return;
+                }
+
                 var attr = editor.dom.getAttrib(node, 'data-break-before');
                 if( attr === 'page' ){
                     node.removeAttribute('data-break-before');
@@ -244,12 +252,12 @@
             });
 
             // Sync break to media since it gets added to parent paragraph
-            var nodes = dom.select( '[data-break-before="page"] img:first-child, [data-break-before="page"] figure:first-child, [data-break-before="page"] picture:first-child, [data-break-before="page"] video:first-child, [data-break-before="page"] iframe:first-child');
+            var nodes = dom.select( '[data-break-before="page"] img:first-child, img[data-break-before="page"], [data-break-before="page"] figure:first-child, figure[data-break-before="page"], [data-break-before="page"] picture:first-child, picture[data-break-before="page"], [data-break-before="page"] video:first-child, video[data-break-before="page"], [data-break-before="page"] iframe:first-child, iframe[data-break-before="page"]');
             nodes.forEach(function(node){
                 if(dom.getAttrib(node, 'data-decorational') === 'article'){
                     // Decorational doesn't support break before on media, so let's remove it from all parents.
-                    while(node.parentNode && node.parentNode.nodeName !== 'BODY'){
-                        dom.setAttrib(node.parentNode, 'data-break-before', null);    
+                    while(node && node.nodeName !== 'BODY'){
+                        dom.setAttrib(node, 'data-break-before', null);    
                         node = node.parentNode;
                     }
                 } else {

@@ -15,6 +15,7 @@ class Storyform {
 	 *	The list of standard WordPress and Storyform actions that we want to still run on wp_head and wp_footer
 	 */
 	private static $default_functions = array(
+		'_wp_render_title_tag'					=> array( 'wp_head', 1 ),
 		'wp_enqueue_scripts' 					=> array( 'wp_head', 1 ),
 		'feed_links' 							=> array( 'wp_head', 2 ),
 		'feed_links_extra' 						=> array( 'wp_head', 3 ),

@@ -10,15 +10,16 @@ Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-0.3.html
 
-The Storyform plugin let's you create rich, immersive Storyform magazines with just a one click.
+The Storyform plugin let's you create engaging, fullscreen magazine stories with just one click.
 
 == Description ==
 
-The Storyform plugin let's you selectively choose posts to apply the [Storyform](https://storyform.co) platform to. Easily set your application key and choose which Storyform templates to use on each post.
+The Storyform plugin let's you craft your story in a format that is more enticing to the reader. Utilizing rich full-bleed fullscreen magazine layouts that flip horizontally, Storyfom gets out of the way of your content. You can even selectively choose which posts to apply [Storyform](https://storyform.co) to. Storyform works great with longform articles, photo-essays, reports or the everyday blog.
 
-With the Storyform platform you can turn your longform WordPress posts into a well-designed magazine-style article. The Storyform platform supports print-like features such as:
+The Storyform platform supports print-like features such as:
 
-- a diverse set of well-crafted layouts
+- fullscreen fullbleed magazine layouts
+- truly responsive across all your devices
 - touch, mouse and keyboard friendly pagination, no more scrolling
 - multi-column articles
 - high quality typography
@@ -26,7 +27,7 @@ With the Storyform platform you can turn your longform WordPress posts into a we
 - pullquotes
 - large photography
 - animations
-- rich video
+- background video
 - captions
 
 https://vimeo.com/106440432

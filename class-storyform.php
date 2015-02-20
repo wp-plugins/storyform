@@ -84,6 +84,7 @@ class Storyform {
 	public function init(){
 		add_filter( 'template_include', array( &$this, 'template_include' ), 9999 );
 		add_filter( 'comments_template', array( &$this, 'comments_template' ), 5 );
+		add_filter( 'comments_template', array( &$this, 'comments_template' ), 9999 );
 			
 	}
 

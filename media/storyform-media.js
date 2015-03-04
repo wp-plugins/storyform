@@ -139,6 +139,10 @@
 		checkImprovements();
 	}
 	function checkImprovements(){
+		if(!jQuery('.storyform-improve').length){
+			return;
+		}
+
 		var items = 0;
 		
 		// Check if we need pullquotes

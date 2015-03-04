@@ -60,7 +60,7 @@
 	<?php endif; ?>
 			
 	</article>
-	<?php require( dirname( __FILE__ ) . '/navbar.php' ); ?>
+	<?php Storyform::navbar_template() ?>
 	<div class="primary-content">
 		<div class="magazine" data-win-control="Controls.FlipView">
 	        <div data-win-control="UI.ProgressBar"></div>

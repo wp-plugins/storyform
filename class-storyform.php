@@ -99,6 +99,26 @@ class Storyform {
 		return $file;
 	}
 
+	/** 
+	 * Loads our navbar template and allows for it to be overridden.
+	 *
+	 */
+	public static function navbar_template() {
+		$navbar_template = dirname( __FILE__ ) . '/navbar.php';
+		/**
+		 * Filter the path to the navbar template file used for the navbar
+		 *
+		 *
+		 * @param string $navbar_template The path to the navbar template file.
+		 */
+		$include = apply_filters( 'storyform_navbar_template', $navbar_template );
+		if( file_exists( $include ) ){
+			require ( $include );
+		} else {
+			require( dirname( __FILE__ ) . '/theme/navbar.php' );	
+		}
+	}
+
 
 	/** 
 	 * Switches the template file (the actual HTML) to the one in this plugin, not to the theme's template.

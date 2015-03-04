@@ -57,7 +57,7 @@ class Storyform_Admin_Meta_Box {
 				<option id="storyform-templates-loading" value="loading" disabled="true">Loading templates (reopen to view)...</option>
 			</select>
 			<div class="storyform-post-options">
-				<div class="storyform-input-group">
+				<div class="storyform-input-group storyform-improve">
 					<progress class="storyform-improve-progress storyform-improve-low" value="1" max="4" ></progress><span class="storyform-improve-text storyform-improve-low"><span class="storyform-improve-count">0</span> post recommendation(s)</span>
 					<ul class="storyform-improve-items">
 						<li class="storyform-improve-bad" id="storyform-improve-description-pullquote"><span id="storyform-improve-pullquote-text" data-no="No pullquotes" data-yes="Includes pullquote"></span>
@@ -191,8 +191,8 @@ class Storyform_Admin_Meta_Box {
 		$template = sanitize_text_field( $_POST['storyform-templates'] );
 		$template = ( $template == 'pthemedefault' ) ? null: $template;
 		$name = sanitize_text_field( strtolower( $_POST['post_name'] ) );
-		$layout_type = sanitize_text_field( strtolower( $_POST['storyform-layout-type'] ) );
-		$use_featured_image = $_POST['storyform-use-featured-image'] === 'on';
+		$layout_type = $template ? sanitize_text_field( strtolower( $_POST['storyform-layout-type'] ) ) : null;
+		$use_featured_image = $template ? isset( $_POST['storyform-use-featured-image'] ) && $_POST['storyform-use-featured-image'] === 'on' : true;
 		$ab = isset( $_POST['storyform-ab'] );
 		
 		$options = Storyform_Options::get_instance();

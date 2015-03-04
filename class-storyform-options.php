@@ -39,14 +39,6 @@ class Storyform_Options {
 	}
 
 	/**
-	 * Gets the Storyform template for a give Post Id or Post name. Id is preferred
-	 *
-	 */
-	function get_template_for_post( $post_id, $post_name ) {
-		return get_post_meta( $post_id, $this->meta_name, true );
-	}
-
-	/**
 	 * Gets whether template should be Storyform A/B tested
 	 *
 	 */
@@ -59,7 +51,7 @@ class Storyform_Options {
 	 *
 	 */
 	function update_ab_for_post( $post_id, $value ) {
-		update_post_meta( $post_id, $this->ab_name, $value );
+		$this->update_post_meta( $post_id, $this->ab_name, $value );
 	}
 
 	protected function get_templates_options() {
@@ -71,11 +63,19 @@ class Storyform_Options {
 	}
 
 	/**
+	 * Gets the Storyform template for a give Post Id or Post name. Id is preferred
+	 *
+	 */
+	function get_template_for_post( $post_id, $post_name ) {
+		return get_post_meta( $post_id, $this->meta_name, true );
+	}
+
+	/**
 	 * Sets the options array
 	 *
 	 */
 	function update_template_for_post( $post_id, $post_name, $template ) {
-		update_post_meta( $post_id, $this->meta_name, $template );
+		$this->update_post_meta( $post_id, $this->meta_name, $template );	
 	}
 
 	/**
@@ -84,6 +84,7 @@ class Storyform_Options {
 	 */
 	function update_layout_type_for_post( $post_id, $value ){
 		if($value !== 'ordered' && $value !== 'slideshow' && $value !== 'freeflow'){
+			delete_post_meta( $post_id, $this->layout_type_name );
 			return false;
 		}
 		// Invert so our default is true
@@ -109,7 +110,7 @@ class Storyform_Options {
 	 */
 	function update_use_featured_image_for_post( $post_id, $value ){
 		// Invert so our default is true
-		update_post_meta( $post_id, $this->featured_image_name, !$value );
+		$this->update_post_meta( $post_id, $this->featured_image_name, !$value );
 	}
 
 	/**
@@ -141,7 +142,7 @@ class Storyform_Options {
 	}
 
 	public function update_crop_area_for_attachment( $attachment_id, $value ){
-		update_post_meta( $attachment_id, $this->crop_name, $value);
+		$this->update_post_meta( $attachment_id, $this->crop_name, $value);
 	}
 
 	public function get_caption_area_for_attachment( $attachment_id ) {
@@ -149,7 +150,7 @@ class Storyform_Options {
 	}
 
 	public function update_caption_area_for_attachment( $attachment_id, $value ){
-		update_post_meta( $attachment_id, 'storyform_text_overlay_areas', $value);
+		$this->update_post_meta( $attachment_id, 'storyform_text_overlay_areas', $value);
 	}
 
 	/**
@@ -499,5 +500,13 @@ class Storyform_Options {
 		}
 
 		return $functions;
+	}
+
+	protected function update_post_meta( $post_id, $meta_key, $meta_value ){
+		if( !$meta_value ){
+			delete_post_meta( $post_id, $meta_key );
+		} else {
+			update_post_meta( $post_id, $meta_key, $meta_value );
+		}
 	}
 }

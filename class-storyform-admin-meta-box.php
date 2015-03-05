@@ -7,6 +7,7 @@
 class Storyform_Admin_Meta_Box {
 
 	public static function init() {
+		add_action( 'content_save_pre', array( __CLASS__, 'save_add_remove_attributes' ) );
 		add_action( 'save_post', array( __CLASS__, 'save_meta_box_data' ) );
 		add_action( 'load-post.php', array( __CLASS__, 'post_meta_boxes_setup' ) );
 		add_action( 'load-post-new.php', array( __CLASS__, 'post_meta_boxes_setup' ) );
@@ -189,10 +190,12 @@ class Storyform_Admin_Meta_Box {
 		// Sanitize user input.
 		$id  = intval( $post_id );
 		$template = sanitize_text_field( $_POST['storyform-templates'] );
-		$template = ( $template == 'pthemedefault' ) ? null: $template;
+		$template = ( $template == 'pthemedefault' ) ? null : $template;
 		$name = sanitize_text_field( strtolower( $_POST['post_name'] ) );
+
 		$layout_type = $template ? sanitize_text_field( strtolower( $_POST['storyform-layout-type'] ) ) : null;
 		$use_featured_image = $template ? isset( $_POST['storyform-use-featured-image'] ) && $_POST['storyform-use-featured-image'] === 'on' : true;
+		
 		$ab = isset( $_POST['storyform-ab'] );
 		
 		$options = Storyform_Options::get_instance();
@@ -200,15 +203,62 @@ class Storyform_Admin_Meta_Box {
 		$options->update_ab_for_post( $id, $ab);
 		$options->update_layout_type_for_post( $id, $layout_type );
 		$options->update_use_featured_image_for_post( $id, $use_featured_image );
+	}
 
-		// Avoid infinite loop by removing save_post hook temporarily
-		remove_action( 'save_post', array( __CLASS__, 'save_meta_box_data' ) );
-		if( $template ) {
-			$content = $storyform_media->add_data_attributes( $id, $_POST['content'] );
-		} else {
-			$content = $storyform_media->remove_data_attributes( $id, $_POST['content'] );
+	/**
+	 * Adds and removes data- attributes as Storyform is turned off and on on a post.
+	 *
+	 * @param string $content The content of a post
+	 */
+	public static function save_add_remove_attributes( $content ) {
+		global $post;
+		global $_POST;
+		global $storyform_media;
+
+		if( !is_object($post) || !$post->ID ){
+			return;
 		}
-		wp_update_post( array( 'ID' => $id, 'post_content' => $content ) );
-		add_action( 'save_post', array( __CLASS__, 'save_meta_box_data' ) );
+
+    	$post_id = $post->ID;
+
+    	// If this is an autosave, our form has not been submitted, so we don't want to do anything.
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return $content;
+		}
+
+		// If this is a revision, don't do anything
+		if ( wp_is_post_revision( $post_id ) ) {
+			return $content;
+		}
+
+		// Check the user's permissions.
+		if ( isset( $_POST['post_type'] ) && 'page' == $_POST['post_type'] ) {
+
+			if ( ! current_user_can( 'edit_page', $post_id ) ) {
+				return $content;
+			}
+
+		} else {
+
+			if ( ! current_user_can( 'edit_post', $post_id ) ) {
+				return $content;
+			}
+		}
+
+    	// Make sure that it is set.
+		if ( ! isset( $_POST['storyform-templates'] ) ) {
+			return $content;
+		}
+
+    	// Read POST as we may be changing the value
+		$template = sanitize_text_field( $_POST['storyform-templates'] );
+		$template = ( $template == 'pthemedefault' ) ? null : $template;
+
+		if( $template ) {
+			$content = $storyform_media->add_data_attributes( $post_id, $content );
+		} else {
+			$content = $storyform_media->remove_data_attributes( $post_id, $content );
+		}
+		return $content;
 	}
 }

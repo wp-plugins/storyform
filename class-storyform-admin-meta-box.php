@@ -7,7 +7,7 @@
 class Storyform_Admin_Meta_Box {
 
 	public static function init() {
-		add_action( 'content_save_pre', array( __CLASS__, 'save_add_remove_attributes' ) );
+		add_filter( 'content_save_pre', array( __CLASS__, 'save_add_remove_attributes' ) );
 		add_action( 'save_post', array( __CLASS__, 'save_meta_box_data' ) );
 		add_action( 'load-post.php', array( __CLASS__, 'post_meta_boxes_setup' ) );
 		add_action( 'load-post-new.php', array( __CLASS__, 'post_meta_boxes_setup' ) );
@@ -216,7 +216,7 @@ class Storyform_Admin_Meta_Box {
 		global $storyform_media;
 
 		if( !is_object($post) || !$post->ID ){
-			return;
+			return $content;
 		}
 
     	$post_id = $post->ID;
@@ -254,9 +254,13 @@ class Storyform_Admin_Meta_Box {
 		$template = sanitize_text_field( $_POST['storyform-templates'] );
 		$template = ( $template == 'pthemedefault' ) ? null : $template;
 
-		if( $template ) {
+		$options = Storyform_Options::get_instance();
+		$old_template = $options->get_template_for_post( $post_id, null );
+
+		// Only run if changing from Storyform to not or vise versa
+		if( !$old_template && $template ) {
 			$content = $storyform_media->add_data_attributes( $post_id, $content );
-		} else {
+		} else if($old_template && !$template) {
 			$content = $storyform_media->remove_data_attributes( $post_id, $content );
 		}
 		return $content;

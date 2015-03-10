@@ -82,6 +82,10 @@ Storyform is still a bit fragile. We are working out the kinks. Start by going t
 
 == Changelog ==
 
+= 0.5.5 =
+* Bug fixes 
+* Support for post titles in Plus user analytics.
+
 = 0.5.4 =
 * Smart Cropping for maintaining full bleed images without cropping out the subject of the image.
 
@@ -129,6 +133,10 @@ Storyform is still a bit fragile. We are working out the kinks. Start by going t
 * Removal of fallback to old theme when on an unsupported browser.
 
 == Upgrade Notice ==
+
+= 0.5.5 =
+* Bug fixes 
+* Support for post titles in Plus user analytics.
 
 = 0.5.4 =
 * Smart Cropping for maintaining full bleed images without cropping out the subject of the image.

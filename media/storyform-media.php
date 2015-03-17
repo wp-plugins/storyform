@@ -198,6 +198,10 @@ function storyform_media_init() {
     $new_attributes = array( 'data-type' => array() );
     _storyform_add_allowed_attrs( $tags, $new_attributes );
 
+    $tags = array( 'storyform-ad' );
+    $new_attributes = array( 'data-slot' => array() );
+    _storyform_add_allowed_attrs( $tags, $new_attributes );
+
 }
 add_action( 'init', 'storyform_media_init' );
 
@@ -215,7 +219,7 @@ function _storyform_add_allowed_attrs( $tags, $new_attributes ){
  *
  */
 function storyform_tiny_mce_before_init( $init ) { 
-	$init['extended_valid_elements'] = isset( $init['extended_valid_elements'] ) ? $init['extended_valid_elements'] . ',img[*],video[*]' : 'img[*],video[*]';
+	$init['extended_valid_elements'] = isset( $init['extended_valid_elements'] ) ? $init['extended_valid_elements'] . ',img[*],video[*],storyform-ad[*]' : 'img[*],video[*],storyform-ad[*]';
 	return $init;
 }
 add_filter('tiny_mce_before_init', 'storyform_tiny_mce_before_init'); 

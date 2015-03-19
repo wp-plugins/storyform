@@ -361,8 +361,11 @@ add_action( 'wp', 'storyform_wp' );
 if( ! function_exists( 'storyform_embed_oembed_html' )) :
 function storyform_embed_oembed_html( $cache, $url, $attr, $post_ID ) {
 	if( in_array( 'autopause', $attr ) ){
-		return preg_replace( '/<iframe /i', '<iframe data-autopause ', $cache );
+		$cache = preg_replace( '/<iframe /i', '<iframe data-autopause ', $cache );
 	}
+
+	$cache = preg_replace( '/ src=/i', ' data-src=', $cache );
+
 	return $cache;
 }
 endif; // storyform_embed_oembed_html

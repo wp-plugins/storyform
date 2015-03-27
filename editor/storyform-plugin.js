@@ -77,7 +77,12 @@
                         p.appendChild(node);
                         editor.dom.setAttrib(p, 'data-break-before', 'page');            
                     } 
-                    editor.dom.setAttrib(node, 'data-break-before', 'page');        
+                    editor.dom.setAttrib(node, 'data-break-before', 'page'); 
+
+                    // Sync up to parent, such as blockquote around a paragraph
+                    if(node.parentNode.nodeName !== 'BODY' && node.parentNode.firstChild === node){
+                        editor.dom.setAttrib(node.parentNode, 'data-break-before', 'page'); 
+                    }
                     
                 }
                 editor.nodeChanged();

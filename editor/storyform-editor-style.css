@@ -72,6 +72,7 @@
 	color: #fe362d;
 }
 
+
 [data-break-before="page"] {
 	position: relative;
 }
@@ -87,4 +88,8 @@
 	width:100%;
 	position: absolute;
 	top:-20px;
+}
+
+[data-break-before="page"] [data-break-before="page"]::before {
+	content: none;
 }

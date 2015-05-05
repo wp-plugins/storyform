@@ -5,7 +5,7 @@ Contributors: RylanH
 Donate link: https://storyform.co
 Tags: storyform, narrative, magazine, longform, photography, slider
 Requires at least: 2.6.1
-Tested up to: 4.1
+Tested up to: 4.2
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-0.3.html

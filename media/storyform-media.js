@@ -123,7 +123,7 @@
 	 */
 	function setLayoutType(){
 		var val = jQuery('#post')[0]['storyform-layout-type'].value;
-		if(tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()){
+		if(window.tinyMCE && tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()){
 			tinyMCE.activeEditor.plugins.storyform.setLayoutType(val);	
 		} else {
 			var textarea = jQuery('#' + wpActiveEditor);
@@ -208,7 +208,7 @@
 	 *
 	 */
 	function hasPullquote(){
-		if(tinyMCE && tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()){
+		if(window.tinyMCE && tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()){
 			var plugin = tinyMCE.activeEditor.plugins.storyform
 			return plugin.hasPullquote();
 		} else {
@@ -224,11 +224,14 @@
 
 	function isLongPost(){
 		var characterLen = 3000;
-		if(tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()){
+		if(window.tinyMCE && tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()){
 			var plugin = tinyMCE.activeEditor.plugins.storyform
 			return plugin.getBodyTextLength() > characterLen;
 		} else {
 			var textarea = jQuery('#' + wpActiveEditor);
+			if(!textarea){
+				return false;
+			}
 			var text = textarea.val();
 
 			var lines = text.split('\n');
@@ -246,7 +249,7 @@
 	function getFiguresHaveOverlay(){
 		var total = 0,
 			count = 0;
-		if(tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()){
+		if(window.tinyMCE && tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()){
 			var plugin = tinyMCE.activeEditor.plugins.storyform
 			var figures = plugin.getFigures();
 			total = figures.length;
@@ -275,7 +278,7 @@
 	function getImagesHaveCrop(){
 		var total = 0,
 			count = 0;
-		if(tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()){
+		if(window.tinyMCE && tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()){
 			var plugin = tinyMCE.activeEditor.plugins.storyform
 			var images = plugin.getImages();
 			total = images.length;
@@ -476,7 +479,7 @@
 	 */
 	function showPopupForCurrentAttachments(id){
 		var plugin;
-		if(tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()){
+		if(window.tinyMCE && tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()){
 			plugin = tinyMCE.activeEditor.plugins.storyform
 			var media = plugin.getImagesMetadata();
 

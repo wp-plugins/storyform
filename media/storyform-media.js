@@ -208,11 +208,14 @@
 	 *
 	 */
 	function hasPullquote(){
-		if(tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()){
+		if(tinyMCE && tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()){
 			var plugin = tinyMCE.activeEditor.plugins.storyform
 			return plugin.hasPullquote();
 		} else {
 			var textarea = jQuery('#' + wpActiveEditor);
+			if(!textarea){
+				return false;
+			}
 			var text = textarea.val();
 
 			return text.indexOf('pullquote') !== -1

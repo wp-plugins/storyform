@@ -81,10 +81,9 @@ class Storyform {
 	/*
 	 * Sets up the necessary actions and filters. 
 	 */
-	public function init(){
+	public function init(){		
 		add_filter( 'template_include', array( &$this, 'template_include' ), 9999 );
 		add_filter( 'comments_template', array( &$this, 'comments_template' ), 5 );
-			
 	}
 
 	/** 
@@ -127,7 +126,6 @@ class Storyform {
 	 */
 	function template_include( $template ) {
 		global $content_width;
-
 		// Check if we are supposed to change this template
 		if( $this->get_storyform_template() ) {
 			$template = dirname( __FILE__ ) . '/theme/single-storyform.php';
@@ -149,6 +147,24 @@ class Storyform {
 		}
 
 		return $template;
+	}
+
+	/**
+	 *	Ensures posts where title and such aren't already in the content that we add it.
+	 *
+	 */
+	function content_title_and_meta( $content ) {
+
+		if( $this->get_storyform_template() && strpos( $content, '<h1' ) === FALSE) {
+			$pre = '<h1>' . get_the_title() . '</h1>';
+			$pre .= '<post-publisher data-publisher="" >' . get_the_author() . '</post-publisher>';
+			$pre .= '<time data-published="" datetime="' . get_the_date() . '">' . get_the_date() . '</time>';
+			if ( has_post_thumbnail() && Storyform_Options::get_instance()->get_use_featured_image_for_post( get_the_ID() ) ) { 
+				$pre .= get_the_post_thumbnail();
+			}
+			$content = $pre . $content;
+		}
+		return $content;
 	}
 
 	/**
@@ -175,6 +191,8 @@ class Storyform {
 				}
 			}	
 		}
+
+		add_filter( 'the_content', array( &$this, 'content_title_and_meta' ), 1000 );
 	}
 
 	/**
@@ -238,15 +256,15 @@ class Storyform {
 	public function get_storyform_template(){
 		// Haven't figured out whether to use Storyform
 		if( ! isset( $this->storyform_template ) ) {
-			$id = get_queried_object_id();
-			if( $id && is_single( $id ) ) {
+			$id = get_queried_object_id() ? get_queried_object_id() : get_the_ID();
+			if( $id && ( is_single( $id ) || is_page( $id ) ) ) {
 				// Explicitly turned off storyform for this pageview
 				if ( isset($_GET['storyform']) && $_GET['storyform'] === 'false' ){
 					$this->storyform_template = null;	
 
 				// Check if storyform post
 				} else {
-					$this->storyform_template = Storyform_Options::get_instance()->get_template_for_post( $id, null );
+					$this->storyform_template = Storyform_Options::get_instance()->get_template_for_post( $id );
 
 					if( !isset($_GET['storyform']) || $_GET['storyform'] !== 'true' ) {
 						// A/B testing 
@@ -274,7 +292,7 @@ class Storyform {
 
 		$id = get_queried_object_id();
 		if( $id && is_single( $id ) ) {
-			return !!Storyform_Options::get_instance()->get_template_for_post( $id, null );
+			return !!Storyform_Options::get_instance()->get_template_for_post( $id );
 		}
 		return FALSE;
 	}

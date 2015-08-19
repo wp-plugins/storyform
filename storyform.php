@@ -4,7 +4,7 @@
 
 Plugin Name:  Storyform
 Plugin URI:   http://storyform.co/docs/wordpress
-Version:      0.5.5
+Version:      0.5.6
 Description:  Plugin to enable Storyform on select posts. Works with both SEO and non-SEO permalinks.
 Author:       Storyform
 Author URI:   https://storyform.co
@@ -12,14 +12,14 @@ Author URI:   https://storyform.co
 **************************************************************************/
 
 global $storyform_version;
-$storyform_version = '0.5.5';
+$storyform_version = '0.5.6';
 
 require_once( dirname( __FILE__ ) . '/config.php');
 require_once( dirname( __FILE__ ) . '/class-storyform-options.php');
-require_once( dirname( __FILE__ ) . '/editor/storyform-editor.php' );
 require_once( dirname( __FILE__ ) . '/media/storyform-media.php' );
 require_once( dirname( __FILE__ ) . '/class-storyform.php');
 require_once( dirname( __FILE__ ) . '/class-storyform-color.php');
+require_once( dirname( __FILE__ ) . '/class-storyform-editor-page.php');
 require_once( dirname( __FILE__ ) . '/class-storyform-settings-page.php');
 require_once( dirname( __FILE__ ) . '/class-storyform-admin-meta-box.php');
 
@@ -29,6 +29,7 @@ $storyform = Storyform::get_instance()->init();
 
 if( is_admin() ) {
 	$storyform_settings_page = new Storyform_Settings_Page();
+	$storyform_editor_page = new Storyform_Editor_Page();
 }
 
 function storyform_init() {
@@ -37,8 +38,6 @@ function storyform_init() {
 add_action( 'init', 'storyform_init' ); 
 
 Storyform_Admin_Meta_Box::init();
-
-$storyform_media = new Storyform_Media();
 
 
 /**

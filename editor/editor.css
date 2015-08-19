@@ -1,0 +1,18 @@
+#wpwrap {
+	height: 100%;
+}
+
+#wpcontent {
+	padding-left: 0;
+	height: 100%
+}
+
+#wpbody {
+	height: 100%;
+}
+
+#wpbody-content {
+	height: 100%;
+    background-color: #FFF;
+    padding-bottom: 0;
+}

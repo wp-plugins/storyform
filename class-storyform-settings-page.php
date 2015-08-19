@@ -11,7 +11,7 @@ class Storyform_Settings_Page
 	 */
 	public function __construct()
 	{
-		add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
+		add_action( 'admin_menu', array( $this, 'add_plugin_page' ), 1000 );
 		add_action( 'admin_init', array( $this, 'page_init' ) );
 		add_action( 'wp_ajax_storyform_save_app_key', array( $this, 'storyform_save_app_key' ) );
 		add_action( 'wp_ajax_storyform_save_site_registered', array( $this, 'storyform_save_site_registered' ) );
@@ -26,12 +26,12 @@ class Storyform_Settings_Page
 	 */
 	public function add_plugin_page()
 	{
-		// This page will be under "Settings"
-		add_options_page(
-			'Settings Admin',
-			'Storyform',
+		add_submenu_page(
+			'storyform-editor',
+			'Storyform Settings',
+			'Settings',
 			'manage_options',
-			'storyform-setting-admin',
+			'storyform-settings',
 			array( $this, 'create_admin_page' )
 		);
 	}
@@ -59,7 +59,7 @@ class Storyform_Settings_Page
 	}
 
 	public function admin_enqueue_scripts() {
-	    if ( isset( $_GET['page'] ) && $_GET['page'] == 'storyform-setting-admin' ) {
+	    if ( isset( $_GET['page'] ) && $_GET['page'] == 'storyform-settings' ) {
 	        wp_enqueue_media();
 
 	        wp_enqueue_style( 'wp-color-picker' );
@@ -88,6 +88,7 @@ class Storyform_Settings_Page
 	 */
 	public function page_init()
 	{
+
 		register_setting(
 			'storyform_option_group', // Option group
 			'storyform_settings', // Option name

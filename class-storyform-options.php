@@ -66,7 +66,7 @@ class Storyform_Options {
 	 * Gets the Storyform template for a give Post Id or Post name. Id is preferred
 	 *
 	 */
-	function get_template_for_post( $post_id, $post_name ) {
+	function get_template_for_post( $post_id ) {
 		return get_post_meta( $post_id, $this->meta_name, true );
 	}
 
@@ -74,7 +74,7 @@ class Storyform_Options {
 	 * Sets the options array
 	 *
 	 */
-	function update_template_for_post( $post_id, $post_name, $template ) {
+	function update_template_for_post( $post_id, $template ) {
 		$this->update_post_meta( $post_id, $this->meta_name, $template );	
 	}
 
@@ -376,44 +376,11 @@ class Storyform_Options {
 	}
 
 	/**
-	 * Migrates old Narrative plugin data over to Storyform
+	 * Migrates older versions of plugin to more recent one
 	 *
 	 */
 	function migrate(){
 		global $wpdb, $storyform_version;
-
-		// Migrate appkey
-		$old_settings = get_option( 'narrative_settings' );
-		if( $old_settings != FALSE ){
-			$settings = array(
-				'storyform_application_key' => $old_settings['narrative_application_key']
-			);
-			update_option( 'storyform_settings', $settings );	
-			delete_option( 'narrative_settings' );
-		}
-		
-		// Migrate which posts use Storyform
-		$old_templates = unserialize( get_option( 'narrative_theme' ) ); // Was serializing for no reason
-		if( $old_templates != FALSE ){
-			$posts = array();
-			foreach( $old_templates as $dt ){
-				$post = array(
-					'id' 		=> $dt['id'],
-					'name'		=> $dt['url'],
-					'template'	=> $dt['theme']
-				);
-				array_push( $posts, $post );
-			}
-			update_option( $this->option_name, $posts );
-			delete_option( 'narrative_theme' );
-		}
-
-		// Migrate overlay data
-		$wpdb->update( 
-			$wpdb->postmeta, 
-			array( 'meta_key' => 'storyform_text_overlay_areas' ),
-			array( 'meta_key' => 'narrative_text_overlay_areas' )
-		);
 
 		// Unspecified layout types are freeflow
 		$version = get_option( 'storyform_version', '' );	
@@ -501,6 +468,9 @@ class Storyform_Options {
 
 		return $functions;
 	}
+
+
+	
 
 	protected function update_post_meta( $post_id, $meta_key, $meta_value ){
 		if( !$meta_value ){

@@ -13,104 +13,17 @@ function storyform_not_empty( $item ) {
  *
  */
 function storyform_admin_enqueue_scripts( $hook ) {
-	wp_register_script( "storyform-media", plugin_dir_url( __FILE__ ) . 'storyform-media.js', array( 'thickbox', 'jquery-ui-tooltip' ) );
 	wp_register_style( "storyform-media", plugin_dir_url( __FILE__ ) . 'storyform-media.css');
 
 	if( 'post.php' != $hook && 'post-new.php' != $hook && 'upload.php' != $hook ) {
 		return;
 	}
-	
-	wp_enqueue_style( "thickbox" );
-	wp_enqueue_script( "thickbox" );
 
-	//wp_enqueue_style( 'jquery-theme', '//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css');
-	wp_enqueue_script( "storyform-media");
 	wp_enqueue_style( "storyform-media");
 }
 add_action( 'admin_enqueue_scripts', 'storyform_admin_enqueue_scripts' );
 
-/**
- *  Inserts configuration data for Storyform
- *
- */
-function storyform_admin_print_scripts(){
-	?>
-	<script> 
-		var storyform = storyform || {};
-		storyform.url = "<?php echo esc_js( Storyform_API::get_instance()->get_hostname() ) ?>";
-	</script>
-	<?php
-}
-add_action( 'admin_print_scripts',  'storyform_admin_print_scripts' ) ;
 
-/**
- *  Adds a button in the sidebar of the "Add Media" Media library view and Edit media pages. The field allows
- *  the publisher to add or edit what part of a photo can be overlaid with text.
- *
- */
-function storyform_attachment_fields_to_edit( $form_fields, $post ){
-	wp_enqueue_script( "storyform-media");
-	
-	$url = esc_js( wp_get_attachment_url( $post->ID ) );
-	$metadata = wp_get_attachment_metadata( $post->ID );
-	$captionMeta = Storyform_Options::get_instance()->get_caption_area_for_attachment( $post->ID );
-	$cropMeta = Storyform_Options::get_instance()->get_crop_area_for_attachment( $post->ID );
-
-	$form_fields['storyform_areas'] = array(
-		'label' =>  esc_attr__( "Crop/Caption areas" ),
-		'input' => 'html',
-		'html' => '<div>' .
-			'<button class="button-primary" id="storyform-add-overlay" data-textContent-multiple="' .  esc_attr__("Edit crop/caption area(s)") . '" data-textContent="' .  esc_attr__( "Add caption/crop area" ) . '"></button>' .
-			'<script> 
-				(function(){
-					var id = "' . $post->ID . '";
-					var url = "' . $url . '";
-					var areas = {
-						crop: "' . wp_kses_post( $cropMeta ) . '",
-						caption: "' . wp_kses_post( $captionMeta ) . '"
-					};
-					storyform.initAttachmentFields && storyform.initAttachmentFields(id, url, areas);
-				})()
-				
-			</script>' .
-		'</div>'
-	);
-
-	return $form_fields;
-}
-add_filter( 'attachment_fields_to_edit', 'storyform_attachment_fields_to_edit', 10, 2 );
-
-
-/**
- *  Admin ajax call which returns the overlay data for a given attachment
- *
- */
-function storyform_get_overlay_areas( ) {
-	echo Storyform_Options::get_instance()->get_caption_area_for_attachment( intval( $_POST['attachment_id'] ) );
-	die(); 
-}
-add_action( 'wp_ajax_storyform_get_overlay_areas', 'storyform_get_overlay_areas' );
-
-
-/**
- *  Admin ajax call to save overlay data to attachment
- *
- */
-function storyform_save_overlay_areas( ) {
-	Storyform_Options::get_instance()->update_caption_area_for_attachment( intval( $_POST['attachment_id'] ), sanitize_text_field( $_POST['storyform_text_overlay_areas'] ) );
-	die(); 
-}
-add_action( 'wp_ajax_storyform_save_overlay_areas', 'storyform_save_overlay_areas' );
-
-/**
- *  Admin ajax call to save crop zone data to attachment
- *
- */
-function storyform_save_crop_areas() {
-	Storyform_Options::get_instance()->update_crop_area_for_attachment( intval( $_POST['attachment_id'] ), sanitize_text_field( $_POST['storyform_crop_areas'] ) );
-	die(); 
-}
-add_action( 'wp_ajax_storyform_save_crop_areas', 'storyform_save_crop_areas' );
 
 /**
  *
@@ -132,22 +45,6 @@ function storyform_read_single_crop ( $str ) {
 	return array( 'shape' => $parts[0], 'x1' => $parts[1], 'y1' => $parts[2], 'x2' => $parts[3], 'y2' => $parts[4] );
 }
 
-/**
- *
- *  Adds data attributes when inserted into editor from Media library only on Storyform posts.
- *
- */
-if( ! function_exists( 'storyform_media_send_to_editor' )) :
-function storyform_media_send_to_editor( $html, $attachment_id, $attachment ) {
-	$post_id = intval( $_POST['post_id'] );
-	if( Storyform_Options::get_instance()->get_template_for_post( $post_id, null ) ){
-		return _storyform_add_data_attributes( $html, $attachment_id, $post_id );
-	}
-
-	return $html;
-}
-endif;
-add_filter( 'media_send_to_editor', 'storyform_media_send_to_editor', 30, 3 );
 
 /**
  *  Adds data(-)sources, data-text-overlay, data-area-crop, data-decorational attributes to image/video attachment html,
@@ -186,43 +83,111 @@ endif;
  *
  */
 function storyform_media_init() {
-    $tags = array( 'img', 'video' );
-    $new_attributes = array( 'data-text-overlay' => array(), 'data-area-crop' => array(), 'data-sources' => array(), 'data-decorational' => array() );
- 	_storyform_add_allowed_attrs( $tags, $new_attributes );
- 	
- 	$tags = array( 'video' );
-    $new_attributes = array( 'nocontrols' => array(), 'noloop' => array(), 'autopause' => array(), 'usemap' => array() );
-    _storyform_add_allowed_attrs( $tags, $new_attributes );
+	global $allowedposttags;
 
-    $tags = array( 'area' );
-    $new_attributes = array( 'data-type' => array() );
-    _storyform_add_allowed_attrs( $tags, $new_attributes );
+	$tags = array(
+		'iframe' => array(
+			'data-area-crop' => true,
+			'data-src' => true
+		),
+		'img' => array(
+			'data-text-overlay' => true,
+			'data-area-crop' => true,
+			'data-sources' => true
+		),
+		'video' => array(
+			'data-text-overlay' => true,
+			'data-area-crop' => true,
+			'data-sources' => true,
+			'nocontrols' => true, 
+			'noloop' => true, 
+			'autopause' => true, 
+			'usemap' => true
+		),
+		'vimeo-video' => array(
+			'videoid' => true,
+			'data-text-overlay' => true,
+			'data-area-crop' => true,
+			'data-sources' => true,
+			'nocontrols' => true, 
+			'noloop' => true, 
+			'autopause' => true, 
+			'usemap' => true
+		),
+		'youtube-video' => array(
+			'videoid' => true,
+			'data-text-overlay' => true,
+			'data-area-crop' => true,
+			'data-sources' => true,
+			'nocontrols' => true, 
+			'noloop' => true, 
+			'autopause' => true, 
+			'usemap' => true
+		),
+		'figure' => array(
+			'data-text-overlay' => true,
+			'data-area-crop' => true,
+			'data-sources' => true,
+			'data-caption-position-top' => true,
+			'data-caption-position-right' => true,
+			'data-caption-position-left' => true,
+			'data-caption-position-bottom' => true,
+			'data-caption-position-width' => true,
+			'data-caption-position-height' => true,
+		),
+		'area' => array(
+			'data-type' => true
+		),
+		'storyform-ad' => array(
+			'data-slot' => true
+		),
+		'post-publisher' => array(
+			'data-publisher' => true,
+		),
+		'time' => array(
+			'data-published' => true,
+		),
+		'google-chart' => array(
+			'data-slot' => true,
+	    	'chart-type'  => true,
+	    	'src' => true, 
+	    	'is-stacked' => true,
+	    	'legend.position' => true, 
+	    	'legend.max-lines' => true,
+	    	'colors' => true,
+	    	'background-color' => true,
+	    	'title' => true,
+	    	'title-text-style.color' => true,
+		)
+	);
 
-    $tags = array( 'storyform-ad' );
-    $new_attributes = array( 'data-slot' => array() );
-    _storyform_add_allowed_attrs( $tags, $new_attributes );
+	foreach ( $tags as $tag => $attrs ) {
+        if ( isset( $allowedposttags[ $tag ] ) && is_array( $allowedposttags[ $tag ] ) ) {
+            $allowedposttags[ $tag ] = array_merge( $allowedposttags[ $tag ], $attrs );
+        } else {
+        	$allowedposttags[ $tag ] = $attrs;
+        }
+    }
 
+    $allowedposttags = array_map( '_storyform_add_global_attributes', $allowedposttags );
 }
 add_action( 'init', 'storyform_media_init' );
 
-function _storyform_add_allowed_attrs( $tags, $new_attributes ){
-	global $allowedposttags;
-	foreach ( $tags as $tag ) {
-        if ( isset( $allowedposttags[ $tag ] ) && is_array( $allowedposttags[ $tag ] ) ) {
-            $allowedposttags[ $tag ] = array_merge( $allowedposttags[ $tag ], $new_attributes );
-        }
-    }
-}
 
-/**
- *	Allow data-text-overlay, data-decorational, data-area-crop, data-source attributes to remain between visual and text views.
- *
- */
-function storyform_tiny_mce_before_init( $init ) { 
-	$init['extended_valid_elements'] = isset( $init['extended_valid_elements'] ) ? $init['extended_valid_elements'] . ',img[*],video[*],storyform-ad[*]' : 'img[*],video[*],storyform-ad[*]';
-	return $init;
+function _storyform_add_global_attributes( $value ) {
+	$global_attributes = array(
+		'data-decorational' => true,
+		'data-layout-pref' => true
+	);
+
+	if ( true === $value )
+		$value = array();
+
+	if ( is_array( $value ) )
+		return array_merge( $value, $global_attributes );
+
+	return $value;
 }
-add_filter('tiny_mce_before_init', 'storyform_tiny_mce_before_init'); 
 
 /*
  *  Returns an escaped data-sources attribute value for an attachment id
@@ -799,50 +764,5 @@ function _storyform_remove_src_attribute( $srcMatches ) {
 
 }
 endif;
-
-
-class Storyform_Media {
-	private $post_id = null;
-
-	/**
-	 *	Adds data-sources, data-decorational, data- map/area.
-	 *
-	 *	@return The post data
-	 */
-	public function add_data_attributes( $post_id , $content ){
-		$this->post_id = $post_id;
-		return preg_replace_callback( '/(?:\<img|\[video)([^>]+?)>/i', array( $this, '_add_data_attributes' ), $content );
-	}
-
-	public function _add_data_attributes( $matches ) {
-		$html = $matches[0];
-		$attributes = $matches[1];
-		if( strpos( $attributes, 'data-sources' ) === FALSE ){
-			// Get the attachment id
-			if( preg_match( '/wp-image-(\d+)/', $attributes, $matches ) ){
-				$attachment_id = intval( $matches[1] );
-				$html = _storyform_add_data_attributes( $html, $attachment_id, $this->post_id );
-			}
-		}
-		return $html;
-	}
-
-	/**
-	 *	Removes data-sources, data-decorational, data-text-overlay, data-area-crop
-	 *
-	 *	@return The post data
-	 */
-	public function remove_data_attributes( $post_id , $content ){
-		$patterns = array(
-			'# data-sources=\\\(?:\'|")([^\'">]+)\\\(?:\'|")#',
-			'# data-text-overlay=\\\(?:\'|")([^\'">]+)\\\(?:\'|")#',
-			'# data-area-crop=\\\(?:\'|")([^\'">]+)\\\(?:\'|")#',
-			'# data-decorational=\\\(?:\'|")([^\'">]+)\\\(?:\'|")#'
-		);
-		return preg_replace($patterns, '', $content );
-	}
-
-	
-}
 
 ?>

@@ -5,7 +5,7 @@ Contributors: RylanH
 Donate link: https://storyform.co
 Tags: storyform, narrative, magazine, longform, photography, slider
 Requires at least: 2.6.1
-Tested up to: 4.2
+Tested up to: 4.3
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-0.3.html
@@ -82,6 +82,10 @@ Storyform is still a bit fragile. We are working out the kinks. Start by going t
 
 == Changelog ==
 
+= 0.5.6 =
+* New editor
+* Support for custom post types
+
 = 0.5.5 =
 * Bug fixes 
 * Support for post titles in Plus user analytics.
@@ -133,6 +137,10 @@ Storyform is still a bit fragile. We are working out the kinks. Start by going t
 * Removal of fallback to old theme when on an unsupported browser.
 
 == Upgrade Notice ==
+
+= 0.5.6 =
+* New editor
+* Support for custom post types
 
 = 0.5.5 =
 * Bug fixes 

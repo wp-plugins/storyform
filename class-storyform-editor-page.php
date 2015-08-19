@@ -112,7 +112,8 @@ class Storyform_Editor_Page
 
 		// If published, grab the latest revision as there may be some unpublished changes
 		if( $post['post_status'] === 'publish' ){
-			$revision = array_values( wp_get_post_revisions( $id ) )[0]->to_array();
+			$array = array_values( wp_get_post_revisions( $id ) );
+			$revision = $array[0]->to_array();
 			$post['post_content'] = $revision['post_content'];
 			$post['post_title'] = $revision['post_title'];
 			$post['post_excerpt'] =	$revision['post_excerpt'];
@@ -233,7 +234,8 @@ class Storyform_Editor_Page
 		$revisions = wp_get_post_revisions( $id );
 
 		if( $post['post_status'] === 'publish' && count( $revisions ) > 0 ){
-			$revision = array_values( $revisions )[0]->to_array();
+			$array = array_values( $revisions );
+			$revision = $array[0]->to_array();
 			$post = array(
 				'ID' => $id,
 				'post_content' => $revision['post_content'],

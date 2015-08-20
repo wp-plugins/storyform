@@ -18,7 +18,9 @@ class Storyform_Editor_Page
 		add_action( 'wp_ajax_storyform_publish_post', array( $this, 'storyform_publish_post' ) );
 		add_action( 'wp_ajax_storyform_delete_post', array( $this, 'storyform_delete_post' ) );
 		add_action( 'wp_ajax_storyform_get_post_types', array( $this, 'storyform_get_post_types' ) );	
-		add_action( 'wp_ajax_storyform_get_media_sizes', array( $this, 'storyform_get_media_sizes' ) );	
+		add_action( 'wp_ajax_storyform_get_media_sizes', array( $this, 'storyform_get_media_sizes' ) );
+		add_action( 'wp_ajax_storyform_redirect_admin_edit', array( $this, 'storyform_redirect_admin_edit' ) );
+			
 		
 	}
 
@@ -52,7 +54,7 @@ class Storyform_Editor_Page
 		if( isset( $_GET[ 'remove' ] ) && isset( $_GET[ 'post' ] ) ){
 			$post_id = intval( $_GET['post'] );
 			Storyform_Options::get_instance()->update_template_for_post( $post_id, null );	
-			wp_redirect( get_edit_post_link( $post_id ) );
+			wp_redirect( get_edit_post_link( $post_id, '&' ) );
 		}
 
 		add_filter( 'admin_body_class', array( $this, 'add_folded_class' ) );
@@ -338,6 +340,19 @@ class Storyform_Editor_Page
 		
 
 		echo json_encode( $id_sizes );
+		die();
+	}
+
+	public function storyform_redirect_admin_edit(){
+		check_ajax_referer( 'storyform-post-nonce' );
+		$id = sanitize_text_field( $_POST['id'] );
+
+		$array = array(
+			'url' => get_edit_post_link( $id, '&' )
+		);
+		
+
+		echo json_encode( $array );
 		die();
 	}
 

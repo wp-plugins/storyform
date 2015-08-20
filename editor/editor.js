@@ -2742,6 +2742,18 @@ WindowMessageManager.addEventListener("redirect", function (ev) {
 	document.location.href = data.url;
 });
 
+WindowMessageManager.addEventListener("redirect-admin-edit", function (ev) {
+	var req = ev.detail.data;
+	jQuery.post(ajaxurl, {
+		action: "storyform_redirect_admin_edit",
+		_ajax_nonce: storyform_nonce,
+		id: req.id
+	}, function (data, textStatus, jqXHR) {
+		data = JSON.parse(data);
+		document.location.href = data.url;
+	});
+});
+
 WindowMessageManager.addEventListener("get-post-types", function (ev) {
 	var data = ev.detail.data;
 

@@ -16,3 +16,10 @@
     background-color: #FFF;
     padding-bottom: 0;
 }
+
+#storyform-editor {
+	position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #FFF;
+}

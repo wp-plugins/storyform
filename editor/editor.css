@@ -1,5 +1,10 @@
+html, body {
+	height:100%;
+}
+
 #wpwrap {
 	height: 100%;
+	overflow-y: hidden;
 }
 
 #wpcontent {
@@ -22,4 +27,8 @@
     top: 0;
     left: 0;
     background-color: #FFF;
+}
+
+#wpfooter {
+	display: none;
 }

@@ -22,7 +22,7 @@ class Storyform_Admin_Meta_Box {
 		$post_id = get_the_ID();
 		$options = Storyform_Options::get_instance();
 		if( $template = $options->get_template_for_post( $post_id ) ) {
-			remove_post_type_support( get_post_type(), 'editor' );
+			//remove_post_type_support( get_post_type(), 'editor' );
 
 			add_meta_box(
 				'storyform-editor-replacement',
@@ -54,6 +54,11 @@ class Storyform_Admin_Meta_Box {
 	public static function templates_editor_replacement( $object, $box ) {
 		$post_id = get_the_ID();
 		?> 
+		<style type="text/css">
+			#postdivrich, .postarea {
+				display: none;
+			}
+		</style>
 		<div class="storyform-editor-replacement"> 
 			<a class="button-primary" href="<?php echo admin_url( 'admin.php?page=storyform-editor&post=' . $post_id ) ?>">Edit Storyform</a>
 			<br />

@@ -22,7 +22,6 @@ class Storyform_Admin_Meta_Box {
 		$post_id = get_the_ID();
 		$options = Storyform_Options::get_instance();
 		if( $template = $options->get_template_for_post( $post_id ) ) {
-			//remove_post_type_support( get_post_type(), 'editor' );
 
 			add_meta_box(
 				'storyform-editor-replacement',

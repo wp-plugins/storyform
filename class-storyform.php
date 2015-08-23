@@ -357,14 +357,16 @@ class Storyform {
 		}
 
 		$instance = Storyform_Api::get_instance();
-		wp_enqueue_script( 'storyform_js', $instance->get_js(), array(), false, false );
-		wp_enqueue_style( 'storyform_css', $instance->get_css(), array(), false, false );
+		$version = Storyform_Options::get_instance()->get_storyform_version_for_post( get_the_ID() );
+		wp_enqueue_script( 'storyform_js', $instance->get_js( $version ), array(), false, false );
+		wp_enqueue_style( 'storyform_css', $instance->get_css( $version ), array(), false, false );
 
 	}
 
 	function enqueue_non_storyform() {
+		$version = Storyform_Options::get_instance()->get_storyform_version_for_post( get_the_ID() );
 		$instance = Storyform_Api::get_instance();
-		wp_enqueue_script( 'storyform_scroll_analytics', $instance->get_scroll_analytics_js(), array(), false, false );
+		wp_enqueue_script( 'storyform_scroll_analytics', $instance->get_scroll_analytics_js( $version ), array(), false, false );
 	}
 
 	/*
@@ -372,17 +374,19 @@ class Storyform {
 	 */
 	function print_inline() {
 		global $storyform_plugin_identifier;
+		$version = Storyform_Options::get_instance()->get_storyform_version_for_post( get_the_ID() );
+		$version = $version ? $version : Storyform_Api::get_instance()->get_version();
 		?>
 		 <script>
 			var _template = {
 				group: '<?php echo $this->get_storyform_template() ?>',
-				version: 'v<?php echo Storyform_Api::get_instance()->get_version() ?>',
+				version: 'v<?php echo $version ?>',
 				host: '<?php echo Storyform_Api::get_instance()->get_hostname() ?>',
 				generator: '<?php echo $storyform_plugin_identifier ?>',
 				appKey: '<?php echo Storyform_Options::get_instance()->get_application_key() ?>'
 			};
 
-			/*-- START RENDER SCRIPT --*/!function(a){function b(a,b){var c=new XMLHttpRequest;c.onreadystatechange=function(){4===c.readyState&&(c.status>=200&&c.status<300?b(null,c):b(c),c.onreadystatechange=function(){})},c.open("GET",a.uri,!0),c.send()}document.documentElement.className+=" js";var c=void 0===_template.host?"//storyform.co":_template.host,d=_template.version||"v0.5",e=_template.generator?"&generator="+_template.generator:"",f=c+"/"+d+"/render/"+a._template.group+"?appKey="+encodeURIComponent(_template.appKey)+"&uri="+encodeURIComponent(document.location.href)+"&lastModified="+encodeURIComponent(document.lastModified)+"&title="+document.title.substr(0,200)+"&width="+window.innerWidth+"&height="+window.innerHeight+"&deviceWidth="+window.screen.width+"&deviceHeight="+window.screen.height+e;a.App=a.App||{},a.App.Data=a.App.Data||{},a.App.Data.render={callback:function(){},data:null,uri:f},b({uri:f},function(b,c){if(c){var d=a.App.Data.render.data=JSON.parse(c.responseText);a.App.Data.render.callback(null,d),a.App.Data.render.callback=function(){}}else a.App.Data.render.error=b,a.App.Data.render.callback(b),a.App.Data.render.callback=function(){}})}(this);/*-- END RENDER SCRIPT --*/
+			/*-- START RENDER SCRIPT --*/!function(a){function b(a,b){var c=new XMLHttpRequest;c.onreadystatechange=function(){4===c.readyState&&(c.status>=200&&c.status<300?b(null,c):b(c),c.onreadystatechange=function(){})},c.open("GET",a.uri,!0),c.send()}document.documentElement.className+=" js";var c=void 0===_template.host?"//storyform.co":_template.host,d=_template.version||"v0.6",e=_template.generator?"&generator="+_template.generator:"",f=c+"/"+d+"/render/"+a._template.group+"?appKey="+encodeURIComponent(_template.appKey)+"&uri="+encodeURIComponent(document.location.href)+"&lastModified="+encodeURIComponent(document.lastModified)+"&title="+document.title.substr(0,200)+"&width="+window.innerWidth+"&height="+window.innerHeight+"&deviceWidth="+window.screen.width+"&deviceHeight="+window.screen.height+e;a.App=a.App||{},a.App.Data=a.App.Data||{},a.App.Data.render={callback:function(){},data:null,uri:f},b({uri:f},function(b,c){if(c){var d=a.App.Data.render.data=JSON.parse(c.responseText);a.App.Data.render.callback(null,d),a.App.Data.render.callback=function(){}}else a.App.Data.render.error=b,a.App.Data.render.callback(b),a.App.Data.render.callback=function(){}})}(this);/*-- END RENDER SCRIPT --*/
 		</script>
 		<?php
 	}

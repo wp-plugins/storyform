@@ -68,13 +68,13 @@ class Storyform_Settings_Page
 	        wp_register_script( 'storyform_widgets', Storyform_Api::get_instance()->get_static_hostname() . '/js/widgets.js' );
 	        wp_enqueue_script( 'storyform_widgets' );
 
-	        wp_register_script( 'storyform_navbar', Storyform_Api::get_instance()->get_static_version_directory() . '/js/navbar.js' );
+	        wp_register_script( 'storyform_navbar', Storyform_Api::get_instance()->get_navbar_js() );
 	        wp_enqueue_script( 'storyform_navbar' );
 
 	        wp_register_script( 'storyform_settings_page', plugins_url( 'settings-page/settings-page.js', __FILE__ ) );
 	        wp_enqueue_script( 'storyform_settings_page' );
 
-	        wp_register_style( 'storyform_navbar', Storyform_Api::get_instance()->get_static_version_directory() . '/css/navbar.css' );
+	        wp_register_style( 'storyform_navbar', Storyform_Api::get_instance()->get_navbar_css() );
 	        wp_enqueue_style( 'storyform_navbar' );
 
 	    	wp_register_style( 'storyform_settings_page', plugins_url( 'settings-page/settings-page.css', __FILE__ ) );

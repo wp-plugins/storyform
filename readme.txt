@@ -82,6 +82,10 @@ Storyform is still a bit fragile. We are working out the kinks. Start by going t
 
 == Changelog ==
 
+= 0.6.0 =
+* Support for new Storyform version
+* Posts can be upgraded one at a time per post
+
 = 0.5.6 =
 * New editor
 * Support for custom post types
@@ -137,6 +141,10 @@ Storyform is still a bit fragile. We are working out the kinks. Start by going t
 * Removal of fallback to old theme when on an unsupported browser.
 
 == Upgrade Notice ==
+
+= 0.6.0 =
+* Support for new Storyform version
+* Posts can be upgraded one at a time per post
 
 = 0.5.6 =
 * New editor

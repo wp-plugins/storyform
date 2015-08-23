@@ -8,6 +8,7 @@ class Storyform_Options {
 
 	private $option_name = 'storyform_templates';
 	private $meta_name = 'storyform_template';
+	private $version_name = 'storyform_version';
 	private $ab_name = 'storyform_ab';
 	private $featured_image_name = 'storyform_use_featured_image';
 	private $layout_type_name = 'storyform_layout_type';
@@ -71,11 +72,47 @@ class Storyform_Options {
 	}
 
 	/**
-	 * Sets the options array
+	 * Sets the post to use Storyform specific template
 	 *
 	 */
 	function update_template_for_post( $post_id, $template ) {
 		$this->update_post_meta( $post_id, $this->meta_name, $template );	
+		// Make sure we set the version to the most recent one
+		$this->update_storyform_version_for_post( $post_id, false );	
+	}
+
+	/**
+	 * Turns off Storyform for the post by removing the specific template
+	 *
+	 */
+	function delete_template_for_post( $post_id ) {
+		delete_post_meta( $post_id, $this->meta_name );	
+		$this->delete_storyform_version_for_post( $post_id );
+	}
+
+	/**
+	 * Gets the specific Storyform version to use for a post
+	 *
+	 */
+	function get_storyform_version_for_post( $post_id ) {
+		return get_post_meta( $post_id, $this->version_name, true );	
+	}
+
+	/**
+	 * Sets the post to use a specific Storyform version
+	 *
+	 */
+	function update_storyform_version_for_post( $post_id, $version ) {
+		$version = $version ? $version : Storyform_Api::get_instance()->get_version();
+		$this->update_post_meta( $post_id, $this->version_name, $version );	
+	}
+
+	/**
+	 * Removes storyform version
+	 *
+	 */
+	function delete_storyform_version_for_post( $post_id ) {
+		delete_post_meta( $post_id, $this->version_name );	
 	}
 
 	/**
@@ -413,6 +450,38 @@ class Storyform_Options {
 			update_option( 'storyform_settings', $storyform_settings );	
 		}
 
+		// Set wordpress version number
+		$args = array(
+			'meta_key' => $this->meta_name,
+			'posts_per_page' => -1
+		);
+		$query = new WP_Query( $args );
+		if( $query->have_posts() ) {
+  			while ( $query->have_posts() ) {
+  				$query->the_post();
+  				$id = get_the_ID();
+  				if( !$this->get_storyform_version_for_post( $id ) ){
+  					if( $this->is_content_v06( get_the_content() ) ){
+  						$this->update_storyform_version_for_post( $id, FALSE );
+  					} else {
+  						$this->update_storyform_version_for_post( $id, '0.5.5' );
+  					}
+  				}
+
+  			} 
+  		}
+  		wp_reset_postdata();
+	}
+
+	protected function is_content_v06( $content ){
+		if( strpos( $content, 'data-layout-pref') !== FALSE ){
+			return TRUE;
+		} else if( strpos( $content, 'data-decorational="section"') !== FALSE ){
+			return TRUE;
+		} else if( strpos( $content, "data-decorational='section'") !== FALSE ){
+			return TRUE;
+		}
+		return FALSE;
 	}
 
 	function get_all_scripts(){

@@ -53,7 +53,7 @@ class Storyform_Editor_Page
 	public function hook_create_page(){
 		if( isset( $_GET[ 'remove' ] ) && isset( $_GET[ 'post' ] ) ){
 			$post_id = intval( $_GET['post'] );
-			Storyform_Options::get_instance()->update_template_for_post( $post_id, null );	
+			Storyform_Options::get_instance()->delete_template_for_post( $post_id );	
 			wp_redirect( get_edit_post_link( $post_id, '&' ) );
 		}
 
@@ -86,9 +86,10 @@ class Storyform_Editor_Page
 		$post_id = isset( $_GET[ 'post' ] ) ? intval( $_GET['post'] ) : null;
 		$post_type = isset( $_GET[ 'post_type' ] ) ? $_GET['post_type'] : null;
 
-		if($post_id){
+		if( $post_id ){
 			$url = $hostname . '/posts/' . $post_id . '/edit-wp?' . ('wp_version=' . get_bloginfo('version')) . '&' . ('sfp_version=' . $storyform_version);
 
+			// Setting template if not for existing post
 			$options = Storyform_Options::get_instance();
 			if( !$options->get_template_for_post( $post_id ) ){
 				$options->update_template_for_post( $post_id, 'Puget' );	
@@ -148,6 +149,7 @@ class Storyform_Editor_Page
 		);  
 		$ID = wp_insert_post( $post );
 
+		// Setting template for new Storyform
 		$options = Storyform_Options::get_instance();
 		$options->update_template_for_post( $ID, $template );
 
@@ -206,6 +208,7 @@ class Storyform_Editor_Page
 			add_filter( 'wp_revisions_to_keep', array( $this, 'revisions_to_keep' ), 10, 2 );
 			wp_update_post( $post );
 
+			// Changing tempalte from one to another
 			if( $template ){
 				$options = Storyform_Options::get_instance();
 				$options->update_template_for_post( $id, $template );
@@ -214,6 +217,10 @@ class Storyform_Editor_Page
 			$id = wp_insert_post( $post );
 			$post['ID'] = $id;
 		}
+
+		// Make sure we make this the most recent version of Storyform
+		Storyform_Options::get_instance()->update_storyform_version_for_post( $post['ID'], false );
+
 
 		echo json_encode( array( $post ) );
 		die();

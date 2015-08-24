@@ -52,6 +52,7 @@ class Storyform_Admin_Meta_Box {
 
 	public static function templates_editor_replacement( $object, $box ) {
 		$post_id = get_the_ID();
+		$nonce = wp_create_nonce( "storyform-post-nonce" );
 		?> 
 		<style type="text/css">
 			#postdivrich, .postarea {
@@ -62,7 +63,7 @@ class Storyform_Admin_Meta_Box {
 			<a class="button-primary" href="<?php echo admin_url( 'admin.php?page=storyform-editor&post=' . $post_id ) ?>">Edit Storyform</a>
 			<br />
 			<br />
-			<a href="<?php echo admin_url( 'admin.php?page=storyform-editor&post=' . $post_id . '&remove' ) ?>">Turn off Storyform</a>
+			<a href="<?php echo admin_url( "admin.php?page=storyform-editor&post={$post_id}&remove=true&_wpnonce={$nonce}" ) ?>">Turn off Storyform</a>
 		</div>
 		<?php
 	}

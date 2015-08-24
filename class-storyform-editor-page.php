@@ -51,10 +51,16 @@ class Storyform_Editor_Page
 	}
 
 	public function hook_create_page(){
-		if( isset( $_GET[ 'remove' ] ) && isset( $_GET[ 'post' ] ) ){
-			$post_id = intval( $_GET['post'] );
+		$nonce = isset( $_GET['_wpnonce'] ) ? $_GET[ '_wpnonce' ] : FALSE;
+		$remove = isset( $_GET[ 'remove' ] ) ? $_GET[ 'remove' ] : FALSE;
+		$post_id = isset( $_GET[ 'post' ] ) ? intval( $_GET[ 'post' ] ) : FALSE;
+		if( $remove && $post_id ){
+			if ( ! wp_verify_nonce( $nonce, 'storyform-post-nonce' ) ) {
+     			die( 'Invalid Nonce' ); 
+     		}
 			Storyform_Options::get_instance()->delete_template_for_post( $post_id );	
 			wp_redirect( get_edit_post_link( $post_id, '&' ) );
+			return;
 		}
 
 		add_filter( 'admin_body_class', array( $this, 'add_folded_class' ) );

@@ -2739,7 +2739,11 @@ WindowMessageManager.addEventListener("delete-post", function (ev) {
 
 WindowMessageManager.addEventListener("redirect", function (ev) {
 	var data = ev.detail.data;
-	document.location.href = data.url;
+	if (data.newTab) {
+		window.open(data.url, "_blank");
+	} else {
+		document.location.href = data.url;
+	}
 });
 
 WindowMessageManager.addEventListener("redirect-admin-edit", function (ev) {

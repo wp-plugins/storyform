@@ -2705,17 +2705,17 @@ WindowMessageManager.addEventListener("update-post", function (ev) {
 	});
 });
 
-WindowMessageManager.addEventListener("publish-post", function (ev) {
+WindowMessageManager.addEventListener("get-publish-url", function (ev) {
 	var data = ev.detail.data;
 
 	jQuery.post(ajaxurl, {
-		action: "storyform_publish_post",
+		action: "storyform_get_publish_url",
 		_ajax_nonce: storyform_nonce,
 		id: data.id,
 		name: data.name
 	}, function (data, textStatus, jqXHR) {
 		data = JSON.parse(data);
-		data.action = "publish-post";
+		data.action = "get-publish-url";
 		data.status = jqXHR.status;
 		WindowMessageManager.postMessage(ev.detail.source, data);
 	});
@@ -2739,11 +2739,7 @@ WindowMessageManager.addEventListener("delete-post", function (ev) {
 
 WindowMessageManager.addEventListener("redirect", function (ev) {
 	var data = ev.detail.data;
-	if (data.newTab) {
-		window.open(data.url, "_blank");
-	} else {
-		document.location.href = data.url;
-	}
+	document.location.href = data.url;
 });
 
 WindowMessageManager.addEventListener("redirect-admin-edit", function (ev) {

@@ -11,11 +11,12 @@ class Storyform_Editor_Page
 	 */
 	public function __construct()
 	{
+		add_action( 'init', array( $this, 'storyform_publish_post' ) );
 		add_action( 'admin_menu', array( $this, 'add_plugin_page' ), 500 );
 		add_action( 'wp_ajax_storyform_get_post', array( $this, 'storyform_get_post' ) );
 		add_action( 'wp_ajax_storyform_create_post', array( $this, 'storyform_create_post' ) );
 		add_action( 'wp_ajax_storyform_update_post', array( $this, 'storyform_update_post' ) );
-		add_action( 'wp_ajax_storyform_publish_post', array( $this, 'storyform_publish_post' ) );
+		add_action( 'wp_ajax_storyform_get_publish_url', array( $this, 'storyform_get_publish_url' ) );
 		add_action( 'wp_ajax_storyform_delete_post', array( $this, 'storyform_delete_post' ) );
 		add_action( 'wp_ajax_storyform_get_post_types', array( $this, 'storyform_get_post_types' ) );	
 		add_action( 'wp_ajax_storyform_get_media_sizes', array( $this, 'storyform_get_media_sizes' ) );
@@ -45,6 +46,15 @@ class Storyform_Editor_Page
 			'Add new', 
 			'publish_posts', 
 			'storyform-editor'
+		);
+
+		add_submenu_page(
+			null, 
+			'Publish post', 
+			'Publish post', 
+			'publish_posts', 
+			'storyform-publish-post',
+			array( $this, 'storyform_publish_post' )
 		);
 
 		add_action( 'load-' . $hook_suffix , array( $this, 'hook_create_page' ), 99999 );
@@ -239,10 +249,30 @@ class Storyform_Editor_Page
 		return $num;
 	}
 
-	public function storyform_publish_post(){
+	public function storyform_get_publish_url(){
 		check_ajax_referer( 'storyform-post-nonce' );
-		$id = sanitize_text_field( $_POST['id'] );
+		$nonce = wp_create_nonce( 'storyform-post-nonce' );
+		$id = intval( $_POST['id'] );
 		$name = sanitize_title( $_POST['name'] );
+
+		$url = admin_url( "admin.php?page=storyform-publish-post&_wpnonce={$nonce}&id={$id}&name={$name}" );
+
+		echo json_encode( array( 'url' => $url ) );
+		die();
+	}
+
+	public function storyform_publish_post(){
+		if( !is_admin() || !isset( $_GET[ 'page' ] ) || $_GET[ 'page' ] !== 'storyform-publish-post' ){
+			return;
+		}
+
+		$nonce = isset( $_GET['_wpnonce'] ) ? $_GET[ '_wpnonce' ] : FALSE;
+		$id = intval( $_GET['id'] );
+		$name = sanitize_title( $_GET['name'] );
+
+		if ( ! wp_verify_nonce( $nonce, 'storyform-post-nonce' ) ) {
+ 			die( 'Invalid Nonce' ); 
+ 		}		
 
 		// Update post with revision if already published, keep name
 		$post = get_post( $id )->to_array();
@@ -269,8 +299,7 @@ class Storyform_Editor_Page
 		wp_update_post( $post );
 		wp_publish_post( $id );
 
-		echo json_encode( array( 'url' => get_permalink( $id ) ) );
-		die();
+		wp_redirect( get_permalink( $id ) );
 	}
 
 	public function storyform_delete_post(){

@@ -70,6 +70,7 @@ class Storyform_Editor_Page
      		}
 			Storyform_Options::get_instance()->delete_template_for_post( $post_id );	
 			wp_redirect( get_edit_post_link( $post_id, '&' ) );
+			die();
 			return;
 		}
 

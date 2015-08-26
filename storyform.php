@@ -4,7 +4,7 @@
 
 Plugin Name:  Storyform
 Plugin URI:   http://storyform.co/docs/wordpress
-Version:      0.6.2
+Version:      0.6.3
 Description:  Plugin to enable Storyform on select posts. Works with both SEO and non-SEO permalinks.
 Author:       Storyform
 Author URI:   https://storyform.co
@@ -12,7 +12,7 @@ Author URI:   https://storyform.co
 **************************************************************************/
 
 global $storyform_version;
-$storyform_version = '0.6.2'; // The plugin version
+$storyform_version = '0.6.3'; // The plugin version
 
 require_once( dirname( __FILE__ ) . '/config.php');
 require_once( dirname( __FILE__ ) . '/class-storyform-options.php');
@@ -99,7 +99,7 @@ function storyform_admin_notice() {
 
     ?>
     <div class="update-nag">
-        <p><?php _e( 'Please <a href="' . admin_url( 'options-general.php?page=storyform-setting-admin' ) . '">login</a> to Storyform to enable this site.' ); ?></p>
+        <p><?php _e( 'Please <a href="' . admin_url( 'options-general.php?page=storyform-settings' ) . '">login</a> to Storyform to enable this site.' ); ?></p>
     </div>
     <?php
 }

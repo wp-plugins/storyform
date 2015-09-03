@@ -2842,9 +2842,7 @@ function choosePoster(cb) {
 			cb(media);
 		});
 	});
-	posterFrame.on("close", function () {
-		cb();
-	});
+
 	posterFrame.open();
 }
 

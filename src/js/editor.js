@@ -204,9 +204,7 @@ function choosePoster(cb){
 		});
 		
     });
-    posterFrame.on( 'close', function() {
-    	cb();
-    });
+
     posterFrame.open();
 }
 

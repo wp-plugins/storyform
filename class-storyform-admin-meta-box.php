@@ -23,6 +23,8 @@ class Storyform_Admin_Meta_Box {
 		$options = Storyform_Options::get_instance();
 		if( $template = $options->get_template_for_post( $post_id ) ) {
 
+			add_filter( 'wp_editor_settings' , array( 'Storyform_Admin_Meta_Box', 'turn_off_editor' ), 9999, 2 );
+
 			add_meta_box(
 				'storyform-editor-replacement',
 				esc_html__( 'Storyform Editor', Storyform_Api::get_instance()->get_textdomain() ), 
@@ -50,21 +52,69 @@ class Storyform_Admin_Meta_Box {
 		
 	}
 
+	/**
+	 *	Turns off basics about the editor. Important as TinyMCE will destroy certain elements
+	 *	in the Storyform editor output like <picture> or <post-publisher>.
+	 *
+	 */
+	public static function turn_off_editor( $settings, $editor_id ) {
+		return array(
+			'wpautop'             => false,
+			'media_buttons'       => false,
+			'default_editor'      => 'html',
+			'drag_drop_upload'    => false,
+			'textarea_name'       => $editor_id,
+			'textarea_rows'       => 20,
+			'tabindex'            => '',
+			'tabfocus_elements'   => ':prev,:next',
+			'editor_css'          => '',
+			'editor_class'        => '',
+			'teeny'               => false,
+			'dfw'                 => false,
+			'_content_editor_dfw' => false,
+			'tinymce'             => false,
+			'quicktags'           => false
+		);
+	}
+
 	public static function templates_editor_replacement( $object, $box ) {
 		$post_id = get_the_ID();
 		$nonce = wp_create_nonce( "storyform-post-nonce" );
+		$unpublished_changes = false;
+		$status = 'draft';
+
+		$post = get_post( $post_id )->to_array();
+
+		// If published, grab the latest revision as there may be some unpublished changes
+		if( $post['post_status'] === 'publish' ){
+			$array = array_values( wp_get_post_revisions( $post_id ) );
+			$revision = $array[0]->to_array();
+			if( strtotime( $revision['post_date'] ) > strtotime( $post['post_modified'] ) ){
+				$unpublished_changes = true;
+			}
+			$status = 'published';
+		}
 		?> 
 		<style type="text/css">
-			#postdivrich, .postarea {
+			#postdivrich, 
+			.postarea {
 				display: none;
 			}
 		</style>
 		<div class="storyform-editor-replacement"> 
+			<p><?php echo $unpublished_changes ? 'You have unpublished changes, use Storyform editor to publish changes.' : '' ?></p>
 			<a class="button-primary" href="<?php echo admin_url( 'admin.php?page=storyform-editor&post=' . $post_id ) ?>">Edit Storyform</a>
 			<br />
 			<br />
-			<a href="<?php echo admin_url( "admin.php?page=storyform-editor&post={$post_id}&remove=true&_wpnonce={$nonce}" ) ?>">Turn off Storyform</a>
+			<a href="<?php echo admin_url( "admin.php?page=storyform-editor&post={$post_id}&remove=true&_wpnonce={$nonce}" ) ?>">Turn off Storyform</a> | <a href="" id="storyform_view_published_html">View <?php echo $status ?> HTML</a> 
 		</div>
+		<script>
+			jQuery('#storyform_view_published_html').click(function(ev){
+				jQuery('#postdivrich, .postarea').show();
+				ev.preventDefault();
+				return false;
+			});
+		</script>
 		<?php
 	}
 

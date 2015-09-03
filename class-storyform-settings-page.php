@@ -59,25 +59,26 @@ class Storyform_Settings_Page
 	}
 
 	public function admin_enqueue_scripts() {
+		global $storyform_version;
 	    if ( isset( $_GET['page'] ) && $_GET['page'] == 'storyform-settings' ) {
 	        wp_enqueue_media();
 
 	        wp_enqueue_style( 'wp-color-picker' );
 	        wp_enqueue_script( 'wp-color-picker' );
 
-	        wp_register_script( 'storyform_widgets', Storyform_Api::get_instance()->get_static_hostname() . '/js/widgets.js' );
+	        wp_register_script( 'storyform_widgets', Storyform_Api::get_instance()->get_static_hostname() . '/js/widgets.js', null, $storyform_version );
 	        wp_enqueue_script( 'storyform_widgets' );
 
-	        wp_register_script( 'storyform_navbar', Storyform_Api::get_instance()->get_navbar_js() );
+	        wp_register_script( 'storyform_navbar', Storyform_Api::get_instance()->get_navbar_js(), null, $storyform_version );
 	        wp_enqueue_script( 'storyform_navbar' );
 
-	        wp_register_script( 'storyform_settings_page', plugins_url( 'settings-page/settings-page.js', __FILE__ ) );
+	        wp_register_script( 'storyform_settings_page', plugins_url( 'settings-page/settings-page.js', __FILE__ ), null, $storyform_version );
 	        wp_enqueue_script( 'storyform_settings_page' );
 
-	        wp_register_style( 'storyform_navbar', Storyform_Api::get_instance()->get_navbar_css() );
+	        wp_register_style( 'storyform_navbar', Storyform_Api::get_instance()->get_navbar_css(), null, $storyform_version );
 	        wp_enqueue_style( 'storyform_navbar' );
 
-	    	wp_register_style( 'storyform_settings_page', plugins_url( 'settings-page/settings-page.css', __FILE__ ) );
+	    	wp_register_style( 'storyform_settings_page', plugins_url( 'settings-page/settings-page.css', __FILE__ ), null, $storyform_version );
 	        wp_enqueue_style( 'storyform_settings_page' );
 
 	    }

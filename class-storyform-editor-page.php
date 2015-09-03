@@ -37,7 +37,7 @@ class Storyform_Editor_Page
 			'storyform-editor',
 			array( $this, 'create_post_page' ),
 			'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjEwIDAgMzAwLjMzMzMgMjY5LjMzMzM0IiBoZWlnaHQ9IjI2OS4zMzMiIHdpZHRoPSIzMDAuMzMzIj48ZGVmcz48Y2xpcFBhdGggaWQ9ImEiPjxwYXRoIGQ9Ik0wIDIzMmg3NjBWMEgweiIvPjwvY2xpcFBhdGg+PC9kZWZzPjxwYXRoIGQ9Ik0yMjMuMDA3IDI1OC45MjVIMTAzLjcwM2wtNTkuNjQ4LTEwMy4yNCA1OS42NDgtMTAzLjI0MmgxMTkuMzA0bDU5LjY0OCAxMDMuMjR6TTIzMC4yIDM5Ljk4SDk2LjUxTDI5LjY2NiAxNTUuNjg1bDY2Ljg0NiAxMTUuN0gyMzAuMmw2Ni44NDYtMTE1Ljd6IiBmaWxsPSIjMjQyNDI0Ii8+PGcgY2xpcC1wYXRoPSJ1cmwoI2EpIiB0cmFuc2Zvcm09Im1hdHJpeCgxLjMzMzMzIDAgMCAtMS4zMzMzMyAwIDMwOS4zMzMpIj48cGF0aCBkPSJNMTE0LjkyOCAxMzAuOTU4Yy0uNDY2IDEwLjM2LTUuMDQgMTUuNzctMTEuMzg1IDE1Ljc3LTYuMjUyIDAtOC43NzItNC4zODUtOC43NzItOS4wNSAwLTUuNiAzLjY0LTguNjggMTAuMjY3LTEyLjc4NSA5Ljg5Mi02LjI1MyAxMy40MzgtOS44IDEzLjQzOC0xNy43MyAwLTExLjI5Mi03LjY1Mi0xOS45Ny0yMy40MjMtMjAuMTU4LTYuOTk4LS4wOTMtMTUuODYzIDEuODY3LTIwLjYyMiA3LjQ2NWwxLjk2IDE2LjA1MmgzLjU0NmMxLjEyLTEyLjY5MiA4LjU4NS0xOS40MSAxNS4zOTctMTkuNDEgNi4xNiAwIDkuNTIgMy45MiA5LjUyIDkuNzk4IDAgNS43ODYtNC4yIDkuMTQ1LTguNjggMTIuMTMtOS43OTcgNi4zNDctMTQuNTU3IDEwLjgyNi0xNC41NTcgMTkuMTMyIDAgNy41NiA0LjAxMyAxOC44NSAyMi4zOTcgMTguODUgNS4zMiAwIDEyLjU5OC0xLjc3MyAxNy40NS01LjZsLTIuODkyLTE0LjQ2NHptMTguMjktMy44MjZsMS4yMTIgNC4zODZoNy4zNzJjMS42OCA2LjA2NSAzLjM2IDExLjAxMiA3LjM3MiAxNS40OSAzLjI2NyAzLjY0IDcuOTMzIDYuMzQ3IDE0LjE4NSA2LjM0NyA4LjY3NyAwIDExLjI5LTMuMzYgMTEuMjktNi44MTIgMC0zLjI2Ny0zLjczMy02LjE2LTYuMzQ2LTYuMTYtMi4yNCAwLTMuMTczIDEuMjEzLTMuNjQgMi44LTEuNCA0LjU3Mi0yLjQyNiA2LjA2Ni0zLjU0NiA2LjA2Ni0xLjMwNyAwLTIuMzM0LTEuNjgtMy4wOC00Ljk0OGwtMi44LTEyLjc4NWg5LjQyNWwtMS4xMi00LjM4NkgxNTQuNGwtOC4zMDUtMzYuNThjLTMuNDUzLTE1LjU4NC0xMS40NzgtMjMuNjEtMjIuMzAzLTIzLjYxLTcgMC0xMS43NTggMi44OTMtMTEuNzU4IDYuNjI3IDAgMi44IDMuNTQ2IDYuOTA1IDYuNTMyIDYuOTA1IDIuMTQ2IDAgMy4xNzMtMS40IDMuODI2LTIuOCAyLjYxMy01LjQxMiA0LjI5My02LjM0NSA1LjEzMi02LjM0NSAxLjQgMCAyLjE0NyAyLjUyIDIuNTIgNC4wMTMgMi42MTMgMTAuNTQ1IDguMzA2IDM4LjU0IDEwLjgyNSA1MS43OTJ6IiBmaWxsPSIjMjQyNDI0Ii8+PC9nPjwvc3ZnPg==',
-			6
+			'6.23'
 		);
 
 		add_submenu_page(
@@ -88,8 +88,9 @@ class Storyform_Editor_Page
 	public function remove_footer_admin() {}
 
 	public function enqueue_files(){
-		wp_enqueue_style( 'storyform-wp-editor', plugin_dir_url( __FILE__ ) . 'editor/editor.css');
-		wp_enqueue_script( 'storyform-wp-editor', plugin_dir_url( __FILE__ ) . 'editor/editor.js');
+		global $storyform_version;
+		wp_enqueue_style( 'storyform-wp-editor', plugin_dir_url( __FILE__ ) . 'editor/editor.css', null, $storyform_version);
+		wp_enqueue_script( 'storyform-wp-editor', plugin_dir_url( __FILE__ ) . 'editor/editor.js', null, $storyform_version);
 		wp_enqueue_media();
 	}
 
@@ -141,7 +142,7 @@ class Storyform_Editor_Page
 		}
 
 		$post['post_content'] = apply_filters( 'the_content', $post['post_content'] );
-
+		$post['template'] = Storyform_Options::get_instance()->get_template_for_post( $id );
 		$post['byline'] = get_userdata( $post['post_author'])->display_name;
 		$post['display_date'] = get_the_date( get_option('date_format'), $post );
 		

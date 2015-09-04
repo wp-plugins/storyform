@@ -2660,6 +2660,7 @@ WindowMessageManager.addEventListener("create-post", function (ev) {
 		action: "storyform_create_post",
 		_ajax_nonce: storyform_nonce,
 		post_title: data.title,
+		post_excerpt: data.excerpt,
 		post_content: data.content,
 		post_type: data.postType,
 		template: data.template
@@ -2695,6 +2696,7 @@ WindowMessageManager.addEventListener("update-post", function (ev) {
 		id: data.id,
 		post_title: data.title,
 		post_content: data.content,
+		post_excerpt: data.excerpt,
 		template: data.template,
 		post_type: data.postType
 	}, function (data, textStatus, jqXHR) {

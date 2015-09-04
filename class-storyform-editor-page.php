@@ -153,16 +153,18 @@ class Storyform_Editor_Page
 
 	public function storyform_create_post(){
 		check_ajax_referer( 'storyform-post-nonce' );
-		$title =  sanitize_text_field( $_POST['post_title'] );
-		$content =  $_POST['post_content'];
-		$template = sanitize_text_field( $_POST['template'] );
-		$post_type = sanitize_text_field( $_POST['post_type'] );
+		$title 		= sanitize_text_field( $_POST['post_title'] );
+		$content 	= $_POST['post_content'];
+		$excerpt 	= sanitize_text_field( $_POST['post_excerpt'] );
+		$template 	= sanitize_text_field( $_POST['template'] );
+		$post_type 	= sanitize_text_field( $_POST['post_type'] );
 		
 		$post = array(
 		  'post_content'   => $content,
 //		  'post_name'      => [ <string> ] // The name (slug) for your post
 		  'post_title'     => $title,
 		  'post_status'    => 'draft',
+		  'post_excerpt'   => $excerpt,
 		  'post_type'      => $post_type,
 		);  
 		$ID = wp_insert_post( $post );
@@ -185,13 +187,14 @@ class Storyform_Editor_Page
 		if( $post['post_status'] === 'publish' ){
 
 			$post = array(
-				'post_type' => 'revision',
-				'post_status' => 'inherit',
-				'post_parent' => $post['ID'],
-				'post_content' => $post['post_content'],
-				'post_title' => $post['post_title'],
-				'post_excerpt' => $post['post_excerpt'],
-				'post_name' => $post['ID'] . '-storyform-revision'
+				'post_type' 	=> 'revision',
+				'post_status' 	=> 'inherit',
+				'post_parent' 	=> $post['ID'],
+				'post_content' 	=> $post['post_content'],
+				'post_excerpt' 	=> $post['post_excerpt'],
+				'post_title' 	=> $post['post_title'],
+				'post_excerpt' 	=> $post['post_excerpt'],
+				'post_name' 	=> $post['ID'] . '-storyform-revision'
 			);
 
 			// Delete more than 5 revisions
@@ -203,9 +206,10 @@ class Storyform_Editor_Page
 
 				// Of course grab the latest version of the revisions as the current to update
 				$revision = $revisions[0]->to_array();
-				$post['post_content'] = $revision['post_content'];
-				$post['post_title'] = $revision['post_title'];
-				$post['post_excerpt'] =	$revision['post_excerpt'];
+				$post['post_content'] 	= $revision['post_content'];
+				$post['post_excerpt'] 	= $revision['post_excerpt'];
+				$post['post_title'] 	= $revision['post_title'];
+				$post['post_excerpt'] 	= $revision['post_excerpt'];
 			} 
 
 		} else {
@@ -217,6 +221,9 @@ class Storyform_Editor_Page
 		}
 		if( isset( $_POST['post_content'] )){
 			$post['post_content'] = $_POST['post_content'];
+		}
+		if( isset( $_POST['post_excerpt'] )){
+			$post['post_excerpt'] = $_POST['post_excerpt'];
 		}
 		if( isset( $_POST['post_type'] )){
 			$post['post_type'] = sanitize_text_field( $_POST['post_type'] );
@@ -285,9 +292,10 @@ class Storyform_Editor_Page
 			$revision = $array[0]->to_array();
 			$post = array(
 				'ID' => $id,
-				'post_content' => $revision['post_content'],
-				'post_title' => $revision['post_title'],
-				'post_excerpt' =>	$revision['post_excerpt']
+				'post_content' 	=> $revision['post_content'],
+				'post_excerpt' 	=> $revision['post_excerpt'],
+				'post_title' 	=> $revision['post_title'],
+				'post_excerpt' 	=> $revision['post_excerpt']
 			);
 
 		} else {

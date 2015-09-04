@@ -135,7 +135,8 @@ class Storyform_Admin_Meta_Box {
 
 		<a class="button-primary" href="<?php echo admin_url( 'admin.php?page=storyform-editor&post=' . $post_id ) ?>">
 			<?php echo $template ? 'Edit Storyform' : 'Create Storyform with ' . $type; ?>
-		</a>
+		</a><br />
+		<small>Save, publish or update prior to switching</small>
 
 	<?php 
 	}

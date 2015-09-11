@@ -134,11 +134,14 @@ class Storyform_Editor_Page
 		// If published, grab the latest revision as there may be some unpublished changes
 		if( $post['post_status'] === 'publish' ){
 			$array = array_values( wp_get_post_revisions( $id ) );
-			$revision = $array[0]->to_array();
-			$post['post_content'] = $revision['post_content'];
-			$post['post_title'] = $revision['post_title'];
-			$post['post_excerpt'] =	$revision['post_excerpt'];
-			$post['unpublished_changes'] = true;
+
+			if( count( $array ) ){
+				$revision = $array[0]->to_array();
+				$post['post_content'] = $revision['post_content'];
+				$post['post_title'] = $revision['post_title'];
+				$post['post_excerpt'] =	$revision['post_excerpt'];
+				$post['unpublished_changes'] = true;
+			}
 		}
 
 		$post['post_content'] = apply_filters( 'the_content', $post['post_content'] );
@@ -158,6 +161,8 @@ class Storyform_Editor_Page
 		$excerpt 	= sanitize_text_field( $_POST['post_excerpt'] );
 		$template 	= sanitize_text_field( $_POST['template'] );
 		$post_type 	= sanitize_text_field( $_POST['post_type'] );
+
+		add_filter( 'pre_option_use_balanceTags', array( $this, 'avoid_balance_tags' ) );
 		
 		$post = array(
 		  'post_content'   => $content,
@@ -181,6 +186,8 @@ class Storyform_Editor_Page
 		check_ajax_referer( 'storyform-post-nonce' );
 		$id = sanitize_text_field( $_POST['id'] );
 		$template = isset( $_POST['template'] ) ? sanitize_text_field( $_POST['template'] ) : null;
+
+		add_filter( 'pre_option_use_balanceTags', array( $this, 'avoid_balance_tags' ) );
 
 		// Check if we've already published, if so create revision
 		$post = get_post( $id )->to_array();
@@ -246,9 +253,16 @@ class Storyform_Editor_Page
 		// Make sure we make this the most recent version of Storyform
 		Storyform_Options::get_instance()->update_storyform_version_for_post( $post['ID'], false );
 
-
 		echo json_encode( array( $post ) );
 		die();
+	}
+
+	/**
+	 *	Unfortunately WordPress's balance XHTML tags setting doesn't allow for <post-publisher> or other custom elements
+	 *
+	 */
+	public function avoid_balance_tags( $balance ){
+		return 0;
 	}
 
 	public function revisions_to_keep( $num, $post ){
@@ -282,6 +296,8 @@ class Storyform_Editor_Page
 		if ( ! wp_verify_nonce( $nonce, 'storyform-post-nonce' ) ) {
  			die( 'Invalid Nonce' ); 
  		}		
+
+ 		add_filter( 'pre_option_use_balanceTags', array( $this, 'avoid_balance_tags' ) );
 
 		// Update post with revision if already published, keep name
 		$post = get_post( $id )->to_array();

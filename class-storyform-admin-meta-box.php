@@ -88,9 +88,11 @@ class Storyform_Admin_Meta_Box {
 		// If published, grab the latest revision as there may be some unpublished changes
 		if( $post['post_status'] === 'publish' ){
 			$array = array_values( wp_get_post_revisions( $post_id ) );
-			$revision = $array[0]->to_array();
-			if( strtotime( $revision['post_date'] ) > strtotime( $post['post_modified'] ) ){
-				$unpublished_changes = true;
+			if( count( $array ) ){
+				$revision = $array[0]->to_array();
+				if( strtotime( $revision['post_date'] ) > strtotime( $post['post_modified'] ) ){
+					$unpublished_changes = true;
+				}
 			}
 			$status = 'published';
 		}

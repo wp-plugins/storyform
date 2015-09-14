@@ -251,14 +251,15 @@ class Storyform_Editor_Page
 			add_filter( 'wp_revisions_to_keep', array( $this, 'revisions_to_keep' ), 10, 2 );
 			wp_update_post( $post );
 
-			// Changing tempalte from one to another
-			if( $template ){
-				$options = Storyform_Options::get_instance();
-				$options->update_template_for_post( $id, $template );
-			}
 		} else {
 			$id = wp_insert_post( $post );
 			$post['ID'] = $id;
+		}
+
+		// Be sure to set template
+		if( $template ){
+			$options = Storyform_Options::get_instance();
+			$options->update_template_for_post( $id, $template );
 		}
 
 		// Make sure we make this the most recent version of Storyform

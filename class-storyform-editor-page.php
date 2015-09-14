@@ -127,29 +127,40 @@ class Storyform_Editor_Page
 
 
 	public function storyform_get_post(){
+		global $wp_query;
 		check_ajax_referer( 'storyform-post-nonce' );
 		$id =  sanitize_text_field( $_POST['id'] );
-		$post = get_post( $id )->to_array();
+		
+		// Setup main loop to establish is_single() + is_page() for the_content filters to read
+		$wp_query = new WP_Query( array( 'p' => $id, 'post_type' => 'any' ) );
+		if( $wp_query->have_posts() ) {
+  			while ( $wp_query->have_posts() ) {
+  				$wp_query->the_post();
+  			}
+  		}
+  		global $post;
+  		$wp_query->is_page = ($post->post_type === 'page'); // Doesn't do this automatically on return
+  		$data = $post->to_array();
 
 		// If published, grab the latest revision as there may be some unpublished changes
-		if( $post['post_status'] === 'publish' ){
+		if( $data['post_status'] === 'publish' ){
 			$array = array_values( wp_get_post_revisions( $id ) );
 
 			if( count( $array ) ){
 				$revision = $array[0]->to_array();
-				$post['post_content'] = $revision['post_content'];
-				$post['post_title'] = $revision['post_title'];
-				$post['post_excerpt'] =	$revision['post_excerpt'];
-				$post['unpublished_changes'] = true;
+				$data['post_content'] = $revision['post_content'];
+				$data['post_title'] = $revision['post_title'];
+				$data['post_excerpt'] =	$revision['post_excerpt'];
+				$data['unpublished_changes'] = true;
 			}
 		}
 
-		$post['post_content'] = apply_filters( 'the_content', $post['post_content'] );
-		$post['template'] = Storyform_Options::get_instance()->get_template_for_post( $id );
-		$post['byline'] = get_userdata( $post['post_author'])->display_name;
-		$post['display_date'] = get_the_date( get_option('date_format'), $post );
+		$data['post_content'] = apply_filters( 'the_content', $data['post_content'] );
+		$data['template'] = Storyform_Options::get_instance()->get_template_for_post( $id );
+		$data['byline'] = get_userdata( $data['post_author'])->display_name;
+		$data['display_date'] = get_the_date( get_option('date_format'), $data );
 		
-		echo json_encode( $post );
+		echo json_encode( $data );
 		
 		die(); 
 	}

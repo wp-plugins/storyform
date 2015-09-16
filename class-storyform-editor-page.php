@@ -176,6 +176,7 @@ class Storyform_Editor_Page
 		$post_type 	= sanitize_text_field( $_POST['post_type'] );
 
 		add_filter( 'pre_option_use_balanceTags', array( $this, 'avoid_balance_tags' ) );
+		kses_remove_filters();
 		
 		$post = array(
 		  'post_content'   => $content,
@@ -315,6 +316,7 @@ class Storyform_Editor_Page
  		}		
 
  		add_filter( 'pre_option_use_balanceTags', array( $this, 'avoid_balance_tags' ) );
+ 		kses_remove_filters();
 
 		// Update post with revision if already published, keep name
 		$post = get_post( $id )->to_array();

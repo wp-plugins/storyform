@@ -86,6 +86,7 @@ function storyform_media_init() {
 	global $allowedposttags;
 
 	$tags = array(
+		'picture' => array(),
 		'iframe' => array(
 			'data-area-crop' => true,
 			'data-src' => true

@@ -104,8 +104,10 @@ class Storyform_Editor_Page
 		$post_id = isset( $_GET[ 'post' ] ) ? intval( $_GET['post'] ) : null;
 		$post_type = isset( $_GET[ 'post_type' ] ) ? $_GET['post_type'] : null;
 
+		$version_params = ('wp_version=' . get_bloginfo('version')) . '&' . ('sfp_version=' . $storyform_version) . '&' . ('app_key=' . Storyform_Options::get_instance()->get_application_key());
+
 		if( $post_id ){
-			$url = $hostname . '/posts/' . $post_id . '/edit-wp?' . ('wp_version=' . get_bloginfo('version')) . '&' . ('sfp_version=' . $storyform_version);
+			$url = $hostname . '/posts/' . $post_id . '/edit-wp?' . $version_params;
 
 			// Setting template if not for existing post
 			$options = Storyform_Options::get_instance();
@@ -114,7 +116,7 @@ class Storyform_Editor_Page
 			}
 
 		} else {
-			$url = $hostname . '/posts/new-wp?' . ($post_type ? 'post_type=' . $post_type : '') . ('wp_version=' . get_bloginfo('version')) . '&' . ('sfp_version=' . $storyform_version);
+			$url = $hostname . '/posts/new-wp?' . ( $post_type ? 'post_type=' . ( $post_type . '&' ) : '' ) . $version_params;
 		}
 		
 		?>
@@ -198,7 +200,10 @@ class Storyform_Editor_Page
 		$id = sanitize_text_field( $_POST['id'] );
 		$template = isset( $_POST['template'] ) ? sanitize_text_field( $_POST['template'] ) : null;
 
+		// Ensure XHTML balancing doesn't ruin custom elements with "-" in them (<post-publisher>)
+		// and ensure even Author's (not just admins) can add <picture> elements and other custom elements
 		add_filter( 'pre_option_use_balanceTags', array( $this, 'avoid_balance_tags' ) );
+		kses_remove_filters();
 
 		// Check if we've already published, if so create revision
 		$post = get_post( $id )->to_array();

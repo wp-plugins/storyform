@@ -17,9 +17,18 @@ $navbar_class .= $width === 'full' ? ' navbar-left' : ' navbar-' . $side;
 $navbar_class .= ' ' . $links . '-links';
 $navbar_class .= $logo == '' ? ' navbar-no-logo' : '';
 
+$edit_link = current_user_can( 'edit_posts' ) ? '<div class="storyform-edit-link"><a href="' . admin_url( 'admin.php?page=storyform-editor&post=' . get_the_ID() ) .'">Edit Post</a></div>' : '';
+
 ?>
 
 <style>
+.storyform-edit-link {
+	font-size: 12px;
+	line-height: 50px;
+	float: left;
+	padding: 0 20px 0 0;
+}
+
 .navbar-site-title,
 .navbar-title a, 
 .navbar-links a {
@@ -118,6 +127,10 @@ $navbar_class .= $logo == '' ? ' navbar-no-logo' : '';
 			<h2 class="navbar-site-title"><?php bloginfo( 'name' ); ?></h2>
 			<img src="<?php echo $logo ?>" alt="logo" />
 		</a>
+	<?php if( $edit_link ) { 
+		echo $edit_link;
+	} ?>
+
 	<?php if( $title ) { ?>
 		<div class="navbar-title">
 			<h6><a href="#"><?php echo $title; ?></a></h6>

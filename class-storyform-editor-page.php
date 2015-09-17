@@ -12,6 +12,7 @@ class Storyform_Editor_Page
 	public function __construct()
 	{
 		add_action( 'init', array( $this, 'storyform_publish_post' ) );
+		add_action( 'post_row_actions', array( $this, 'add_post_row_action' ), 10, 2 );
 		add_action( 'admin_menu', array( $this, 'add_plugin_page' ), 500 );
 		add_action( 'wp_ajax_storyform_get_post', array( $this, 'storyform_get_post' ) );
 		add_action( 'wp_ajax_storyform_create_post', array( $this, 'storyform_create_post' ) );
@@ -21,7 +22,7 @@ class Storyform_Editor_Page
 		add_action( 'wp_ajax_storyform_get_post_types', array( $this, 'storyform_get_post_types' ) );	
 		add_action( 'wp_ajax_storyform_get_media_sizes', array( $this, 'storyform_get_media_sizes' ) );
 		add_action( 'wp_ajax_storyform_redirect_admin_edit', array( $this, 'storyform_redirect_admin_edit' ) );
-			
+		
 		
 	}
 
@@ -58,6 +59,14 @@ class Storyform_Editor_Page
 		);
 
 		add_action( 'load-' . $hook_suffix , array( $this, 'hook_create_page' ), 99999 );
+	}
+
+	public function add_post_row_action( $actions, $post ){
+		$template = Storyform_Options::get_instance()->get_template_for_post( $post->ID );
+		if( $template ){
+			array_unshift( $actions, '<a href="' . admin_url( 'admin.php?page=storyform-editor&post=' . $post->ID ) .'">Edit Storyform</a>' );
+		}
+		return $actions;
 	}
 
 	public function hook_create_page(){
@@ -320,17 +329,15 @@ class Storyform_Editor_Page
 
 		// Update post with revision if already published, keep name
 		$post = get_post( $id )->to_array();
-		$revisions = wp_get_post_revisions( $id );
+		$revisions = array_values( wp_get_post_revisions( $id ) );
 
 		if( $post['post_status'] === 'publish' && count( $revisions ) > 0 ){
-			$array = array_values( $revisions );
-			$revision = $array[0]->to_array();
+			$revision = $revisions[0]->to_array();
 			$post = array(
 				'ID' => $id,
 				'post_content' 	=> $revision['post_content'],
 				'post_excerpt' 	=> $revision['post_excerpt'],
-				'post_title' 	=> $revision['post_title'],
-				'post_excerpt' 	=> $revision['post_excerpt']
+				'post_title' 	=> $revision['post_title']
 			);
 
 		} else {

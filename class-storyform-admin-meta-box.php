@@ -17,13 +17,24 @@ class Storyform_Admin_Meta_Box {
 	 *
 	 */
 	public static function add_post_meta_boxes() {
-		
+		global $post;
 
 		$post_id = get_the_ID();
 		$options = Storyform_Options::get_instance();
 		if( $template = $options->get_template_for_post( $post_id ) ) {
 
 			add_filter( 'wp_editor_settings' , array( 'Storyform_Admin_Meta_Box', 'turn_off_editor' ), 9999, 2 );
+
+			// If published use the latest revision
+			if( $post->post_status === 'publish' ){
+				$revisions = array_values( wp_get_post_revisions( $post_id ) );
+
+				if( count( $revisions ) ){
+					$post->post_content = $revisions[0]->post_content;
+					$post->post_title = $revisions[0]->post_title;
+					$post->post_excerpt = $revisions[0]->post_excerpt;
+				}
+			}
 
 			add_meta_box(
 				'storyform-editor-replacement',
@@ -81,7 +92,6 @@ class Storyform_Admin_Meta_Box {
 		$post_id = get_the_ID();
 		$nonce = wp_create_nonce( "storyform-post-nonce" );
 		$unpublished_changes = false;
-		$status = 'draft';
 
 		$post = get_post( $post_id )->to_array();
 
@@ -94,7 +104,6 @@ class Storyform_Admin_Meta_Box {
 					$unpublished_changes = true;
 				}
 			}
-			$status = 'published';
 		}
 		?> 
 		<style type="text/css">
@@ -104,11 +113,11 @@ class Storyform_Admin_Meta_Box {
 			}
 		</style>
 		<div class="storyform-editor-replacement"> 
-			<p><?php echo $unpublished_changes ? 'You have unpublished changes, use Storyform editor to publish changes.' : '' ?></p>
+			<p><?php echo $unpublished_changes ? 'You have unpublished changes to the title, excerpt and/or content.' : '' ?></p>
 			<a class="button-primary" href="<?php echo admin_url( 'admin.php?page=storyform-editor&post=' . $post_id ) ?>">Edit Storyform</a>
 			<br />
 			<br />
-			<a href="<?php echo admin_url( "admin.php?page=storyform-editor&post={$post_id}&remove=true&_wpnonce={$nonce}" ) ?>">Turn off Storyform</a> | <a href="" id="storyform_view_published_html">View <?php echo $status ?> HTML</a> 
+			<a href="<?php echo admin_url( "admin.php?page=storyform-editor&post={$post_id}&remove=true&_wpnonce={$nonce}" ) ?>">Turn off Storyform</a> | <a href="" id="storyform_view_published_html">View HTML</a> 
 		</div>
 		<script>
 			jQuery('#storyform_view_published_html').click(function(ev){
@@ -148,7 +157,7 @@ class Storyform_Admin_Meta_Box {
 	 * Fire our meta box setup function on the post editor screen.
 	 */
 	public static function post_meta_boxes_setup() {
-		add_action( 'add_meta_boxes', array( __CLASS__, 'add_post_meta_boxes' ) );
+		add_action( 'add_meta_boxes', array( __CLASS__, 'add_post_meta_boxes' ), 1 );
 	}
 
 }

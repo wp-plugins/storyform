@@ -345,6 +345,7 @@ class Storyform_Editor_Page
 		wp_publish_post( $id );
 
 		wp_redirect( get_permalink( $id ) );
+		die();
 	}
 
 	public function storyform_delete_post(){

@@ -99,7 +99,7 @@ function storyform_admin_notice() {
 
     ?>
     <div class="update-nag">
-        <p><?php _e( 'Please <a href="' . admin_url( 'options-general.php?page=storyform-settings' ) . '">login</a> to Storyform to enable this site.' ); ?></p>
+        <p><?php _e( 'Please <a href="' . admin_url( 'admin.php?page=storyform-settings' ) . '">login</a> to Storyform to enable this site.' ); ?></p>
     </div>
     <?php
 }

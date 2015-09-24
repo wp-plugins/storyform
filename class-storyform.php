@@ -103,7 +103,7 @@ class Storyform {
 	 *
 	 */
 	public static function navbar_template() {
-		$navbar_template = dirname( __FILE__ ) . '/navbar.php';
+		$navbar_template = dirname( __FILE__ ) . '/theme/navbar.php';
 		/**
 		 * Filter the path to the navbar template file used for the navbar
 		 *

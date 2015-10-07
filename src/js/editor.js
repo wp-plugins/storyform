@@ -25,7 +25,8 @@ WindowMessageManager.addEventListener('create-post', function(ev){
 		post_excerpt: data.excerpt,
 		post_content: data.content,
 		post_type: data.postType,
-		template: data.template
+		template: data.template,
+		horizontal: data.horizontal
 	}, function(data, textStatus, jqXHR){
 		data = JSON.parse(data);
 		data.action = 'create-post';
@@ -60,7 +61,8 @@ WindowMessageManager.addEventListener('update-post', function(ev){
 		post_content: data.content,
 		post_excerpt: data.excerpt,
 		template: data.template,
-		post_type: data.postType
+		post_type: data.postType,
+		horizontal: data.horizontal
 	}, function(data, textStatus, jqXHR){
 		data = JSON.parse(data);
 		data.action = 'update-post';

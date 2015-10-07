@@ -18,20 +18,15 @@ class Storyform_Api {
     }
 
     function get_static_hostname(){
-        if( defined( 'STORYFORM_LOCALHOST' ) && STORYFORM_LOCALHOST ){
-            return '//localhost/static';
+        if( !Storyform_Options::get_instance()->get_preview_next_version() ){
+            return '//betastatic.storyform.co';
         } else {
             return '//static.storyform.co';
         }
     }
 
     function get_hostname(){
-
-        if( defined( 'STORYFORM_LOCALHOST' ) && STORYFORM_LOCALHOST ){
-            return '//localhost';
-        } else {
-            return '//storyform.co';
-        }
+        return '//storyform.co';
     }
 
     function get_version(){
@@ -49,14 +44,14 @@ class Storyform_Api {
         if( !$version ){
             $version = $this->version;
         }
-        return $this->get_static_hostname() . '/v' . $version . ( defined( 'STORYFORM_LOCALHOST' ) && STORYFORM_LOCALHOST ? '/js/wp-localhost.js' : '/js/read.js' );
+        return $this->get_static_hostname() . '/v' . $version . '/js/read.js';
     }
 
     function get_scroll_analytics_js( $version ){
         if( !$version ){
             $version = $this->version;
         }
-        return $this->get_static_hostname() . '/v' . $version . ( defined( 'STORYFORM_LOCALHOST' ) && STORYFORM_LOCALHOST ? '/js/scroll-analytics-localhost.js' : '/js/scroll-analytics.js' );    
+        return $this->get_static_hostname() . '/v' . $version . '/js/scroll-analytics.js';    
     }
 
     // Hardcode v0.5 for now until we replace with new v0.6

@@ -118,6 +118,16 @@ class Storyform {
 		}
 	}
 
+	/** 
+	 * Gets flipping direction FlipView attribute for current post.
+	 *
+	 */
+	public static function horizontal_attr() {
+		$instance = Storyform_Options::get_instance();
+		$horizontal = $instance->get_horizontal_for_post( get_the_ID() );
+		return 'data-horizontal="' . ( $horizontal ? $horizontal : "true" ) . '"';
+	}
+
 
 	/** 
 	 * Switches the template file (the actual HTML) to the one in this plugin, not to the theme's template.

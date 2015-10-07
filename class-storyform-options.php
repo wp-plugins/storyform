@@ -9,6 +9,7 @@ class Storyform_Options {
 	private $option_name = 'storyform_templates';
 	private $meta_name = 'storyform_template';
 	private $version_name = 'storyform_version';
+	private $horizontal_name = 'storyform_horizontal';
 	private $ab_name = 'storyform_ab';
 	private $featured_image_name = 'storyform_use_featured_image';
 	private $layout_type_name = 'storyform_layout_type';
@@ -62,6 +63,23 @@ class Storyform_Options {
 		}
 		return $options;
 	}
+
+	/**
+	 * Gets when post should be horizontal or vertical
+	 *
+	 */
+	function get_horizontal_for_post( $post_id ) {
+		return get_post_meta( $post_id, $this->horizontal_name, true );
+	}
+
+	/**
+	 * Sets when post should be horizontal or vertical
+	 *
+	 */
+	function update_horizontal_for_post( $post_id, $value ) {
+		$this->update_post_meta( $post_id, $this->horizontal_name, $value );
+	}
+
 
 	/**
 	 * Gets the Storyform template for a give Post Id or Post name. Id is preferred
@@ -385,6 +403,15 @@ class Storyform_Options {
 		$value = ! isset( $storyform_settings['storyform_add_image_sizes'] ) || $storyform_settings['storyform_add_image_sizes'];    
 		
 		return $value;
+	}
+
+	/**
+	 * Gets whether to use latest preview version of Storyform.
+	 *
+	 */
+	function get_preview_next_version(){
+		$storyform_settings = $this->get_settings();
+		return isset( $storyform_settings['storyform_preview_next_version'] ) && $storyform_settings['storyform_preview_next_version'];    
 	}
 
 	/**

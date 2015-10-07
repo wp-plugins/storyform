@@ -110,6 +110,8 @@ class Storyform_Editor_Page
 		
 		$hostname = Storyform_API::get_instance()->get_hostname();
 
+		$preview = Storyform_Options::get_instance()->get_preview_next_version();
+
 		$post_id = isset( $_GET[ 'post' ] ) ? intval( $_GET['post'] ) : null;
 		$post_type = isset( $_GET[ 'post_type' ] ) ? $_GET['post_type'] : null;
 
@@ -126,6 +128,10 @@ class Storyform_Editor_Page
 
 		} else {
 			$url = $hostname . '/posts/new-wp?' . ( $post_type ? 'post_type=' . ( $post_type . '&' ) : '' ) . $version_params;
+		}
+
+		if( $preview ){
+			$url .= '&preview=true';
 		}
 		
 		?>
@@ -168,6 +174,7 @@ class Storyform_Editor_Page
 
 		$data['post_content'] = apply_filters( 'the_content', $data['post_content'] );
 		$data['template'] = Storyform_Options::get_instance()->get_template_for_post( $id );
+		$data['horizontal'] = Storyform_Options::get_instance()->get_horizontal_for_post( $id );
 		$data['byline'] = get_userdata( $data['post_author'])->display_name;
 		$data['display_date'] = get_the_date( get_option('date_format'), $data );
 		
@@ -182,6 +189,7 @@ class Storyform_Editor_Page
 		$content 	= $_POST['post_content'];
 		$excerpt 	= sanitize_text_field( $_POST['post_excerpt'] );
 		$template 	= sanitize_text_field( $_POST['template'] );
+		$horizontal = isset( $_POST['horizontal']) ? sanitize_text_field( $_POST['horizontal'] ) : null;
 		$post_type 	= sanitize_text_field( $_POST['post_type'] );
 
 		add_filter( 'pre_option_use_balanceTags', array( $this, 'avoid_balance_tags' ) );
@@ -197,9 +205,12 @@ class Storyform_Editor_Page
 		);  
 		$ID = wp_insert_post( $post );
 
-		// Setting template for new Storyform
+		// Setting template + direction for new Storyform
 		$options = Storyform_Options::get_instance();
 		$options->update_template_for_post( $ID, $template );
+		if( $horizontal ){
+			$options->update_horizontal_for_post( $ID, $horizontal );		
+		}
 
 		echo json_encode( array( 'ID' => $ID ) );
 		die();
@@ -209,6 +220,7 @@ class Storyform_Editor_Page
 		check_ajax_referer( 'storyform-post-nonce' );
 		$id = sanitize_text_field( $_POST['id'] );
 		$template = isset( $_POST['template'] ) ? sanitize_text_field( $_POST['template'] ) : null;
+		$horizontal = isset( $_POST['horizontal'] ) ? sanitize_text_field( $_POST['horizontal'] ) : null;
 
 		// Ensure XHTML balancing doesn't ruin custom elements with "-" in them (<post-publisher>)
 		// and ensure even Author's (not just admins) can add <picture> elements and other custom elements
@@ -271,10 +283,16 @@ class Storyform_Editor_Page
 			$post['ID'] = $id;
 		}
 
+		$options = Storyform_Options::get_instance();
+
 		// Be sure to set template
 		if( $template ){
-			$options = Storyform_Options::get_instance();
 			$options->update_template_for_post( $id, $template );
+		}
+
+		// Update direction of flipping
+		if( $horizontal ){
+			$options->update_horizontal_for_post( $id, $horizontal );
 		}
 
 		// Make sure we make this the most recent version of Storyform

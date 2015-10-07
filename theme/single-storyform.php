@@ -57,7 +57,7 @@
 	</article>
 	<?php Storyform::navbar_template() ?>
 	<div class="primary-content">
-		<div class="magazine storyform-magazine" data-win-control="Controls.FlipView">
+		<div class="magazine storyform-magazine" data-win-control="Controls.FlipView" <?php echo Storyform::horizontal_attr() ?>>
 	        <div data-win-control="UI.ProgressBar"></div>
 	        <div data-win-control="UI.PageNumbers"></div>
 		</div>

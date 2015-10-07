@@ -178,7 +178,8 @@ add_action( 'init', 'storyform_media_init' );
 function _storyform_add_global_attributes( $value ) {
 	$global_attributes = array(
 		'data-decorational' => true,
-		'data-layout-pref' => true
+		'data-layout-pref' => true,
+		'data-layout-pref-end' => true
 	);
 
 	if ( true === $value )

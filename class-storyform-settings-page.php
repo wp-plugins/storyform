@@ -160,6 +160,14 @@ class Storyform_Settings_Page
 			'storyform_advanced_section_id' // Section
 		);
 
+		add_settings_field(
+			'storyform_preview_next_version',
+			'Storyform Preview',
+			array( $this, 'storyform_preview_next_version_callback' ),
+			'storyform-setting-admin',
+			'storyform_advanced_section_id'
+		);
+
 	}
 
 	/**
@@ -240,6 +248,9 @@ class Storyform_Settings_Page
 		} else {
 			$new_input['storyform_selected_functions'] = array();
 		}
+
+		// Sanitize use of preview mode
+		$new_input['storyform_preview_next_version'] = isset( $input['storyform_preview_next_version'] ) ? TRUE : FALSE;
 
 		return $new_input;
 	}
@@ -582,6 +593,14 @@ class Storyform_Settings_Page
 			var storyformAjaxNonce = '<?php echo $ajax_nonce; ?>';
 		</script>
 		<?php	
+	}
+
+	public function storyform_preview_next_version_callback()
+	{
+		$checked = Storyform_Options::get_instance()->get_preview_next_version() ? 'checked' : '';
+		?>
+		<input type="checkbox" id="storyform-preview-next-version" class="storyform-preview-next-version" name="storyform_settings[storyform_preview_next_version]" <?php echo $checked ?> /><label for="storyform-preview-next-version">Preview next version of Storyform</label>
+		<?php
 	}
 
 	protected function get_plugin_dir_for_function_name( $id ){

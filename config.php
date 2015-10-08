@@ -18,7 +18,7 @@ class Storyform_Api {
     }
 
     function get_static_hostname(){
-        if( !Storyform_Options::get_instance()->get_preview_next_version() ){
+        if( Storyform_Options::get_instance()->get_preview_next_version() ){
             return '//betastatic.storyform.co';
         } else {
             return '//static.storyform.co';

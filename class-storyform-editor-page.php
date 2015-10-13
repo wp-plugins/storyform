@@ -11,7 +11,7 @@ class Storyform_Editor_Page
 	 */
 	public function __construct()
 	{
-		add_action( 'init', array( $this, 'storyform_publish_post' ) );
+		add_action( 'init', array( $this, 'init' ) );
 		add_action( 'post_row_actions', array( $this, 'add_post_row_action' ), 10, 2 );
 		add_action( 'admin_menu', array( $this, 'add_plugin_page' ), 500 );
 		add_action( 'wp_ajax_storyform_get_post', array( $this, 'storyform_get_post' ) );
@@ -21,9 +21,7 @@ class Storyform_Editor_Page
 		add_action( 'wp_ajax_storyform_delete_post', array( $this, 'storyform_delete_post' ) );
 		add_action( 'wp_ajax_storyform_get_post_types', array( $this, 'storyform_get_post_types' ) );	
 		add_action( 'wp_ajax_storyform_get_media_sizes', array( $this, 'storyform_get_media_sizes' ) );
-		add_action( 'wp_ajax_storyform_redirect_admin_edit', array( $this, 'storyform_redirect_admin_edit' ) );
-		
-		
+		add_action( 'wp_ajax_storyform_redirect_admin_edit', array( $this, 'storyform_redirect_admin_edit' ) );	
 	}
 
 	/**
@@ -329,10 +327,27 @@ class Storyform_Editor_Page
 		die();
 	}
 
-	public function storyform_publish_post(){
-		if( !is_admin() || !isset( $_GET[ 'page' ] ) || $_GET[ 'page' ] !== 'storyform-publish-post' ){
-			return;
+	public function init(){
+		add_filter( "pre_post_content", array( $this, 'avoid_filters' ), 10, 1 );
+
+		if( is_admin() && isset( $_GET[ 'page' ] ) && $_GET[ 'page' ] === 'storyform-publish-post' ){
+			$this->storyform_publish_post();
 		}
+	}
+
+	public function avoid_filters( $value ) {
+		$template = Storyform_Options::get_instance()->get_template_for_post( get_the_ID() );
+		if( $template ) {
+			// Ensure XHTML balancing doesn't ruin custom elements with "-" in them (<post-publisher>)
+			// and ensure even Author's (not just admins) can add <picture> elements and other custom elements
+			add_filter( 'pre_option_use_balanceTags', array( $this, 'avoid_balance_tags' ) );
+	 		kses_remove_filters();
+	 	}
+	 	return $value;
+	}
+
+	public function storyform_publish_post(){
+		
 
 		$nonce = isset( $_GET['_wpnonce'] ) ? $_GET[ '_wpnonce' ] : FALSE;
 		$id = intval( $_GET['id'] );
